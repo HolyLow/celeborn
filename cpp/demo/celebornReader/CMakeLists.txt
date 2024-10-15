@@ -31,9 +31,9 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
             "libraries in '${THIRDPARTY_INSTALL_DIR}'.")
 endif()
 
-if (NOT APPLE)
-    set(Boost_USE_STATIC_RUNTIME ON)
-endif ()
+#if (NOT APPLE)
+#    set(Boost_USE_STATIC_RUNTIME ON)
+#endif ()
 set(Boost_USE_MULTITHREADED TRUE)
 find_package(
         Boost
