@@ -49,13 +49,15 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
             "thirdparty libraries.")
 endif ()
 
-if (NOT APPLE)
-    set(Boost_USE_STATIC_RUNTIME ON)
-endif ()
+#if (NOT APPLE)
+#    set(Boost_USE_STATIC_RUNTIME ON)
+#    set(Boost_USE_STATIC_LIBS ON)
+#endif ()
 set(Boost_USE_MULTITHREADED TRUE)
 find_package(
         Boost
-        1.75.0
+	#1.75.0
+        1.84.0
         REQUIRED
         program_options
         context
