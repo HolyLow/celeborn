@@ -17,6 +17,8 @@
 
 package org.apache.celeborn.client.read;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -69,6 +71,12 @@ public abstract class CelebornInputStream extends InputStream {
     if (locations == null || locations.size() == 0) {
       return emptyInputStream;
     } else {
+      // for test only
+      synchronized (CelebornInputStreamImpl.class) {
+        FileWriter fileWriter = new FileWriter(new File("/tmp/shuffleKey.txt"));
+        fileWriter.write(shuffleKey);
+        fileWriter.close();
+      }
       return new CelebornInputStreamImpl(
           conf,
           clientFactory,

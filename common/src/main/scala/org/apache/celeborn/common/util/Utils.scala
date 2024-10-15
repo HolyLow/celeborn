@@ -53,6 +53,7 @@ import org.apache.celeborn.common.protocol.{PartitionLocation, PartitionSplitMod
 import org.apache.celeborn.common.protocol.message.{ControlMessages, Message, StatusCode}
 import org.apache.celeborn.common.protocol.message.ControlMessages.WorkerResource
 import org.apache.celeborn.reflect.DynConstructors
+import org.apache.celeborn.common.rpc.netty.NettyRpcEnv
 
 object Utils extends Logging {
 
@@ -272,6 +273,15 @@ object Utils extends Logging {
       try {
         val (service, port) = startService(tryPort)
         logInfo(s"Successfully started service$serviceString on port $port.")
+        // for test only
+        if (serviceString == " 'LifecycleManager'") {
+          this.getClass.synchronized {
+            val address = service.asInstanceOf[NettyRpcEnv].address
+            val fileWriter = new FileWriter(new File("/tmp/LifecycleManagerHost.txt"))
+            fileWriter.write(address.hostPort)
+            fileWriter.close
+          }
+        }
         return (service, port)
       } catch {
         case e: Exception if isBindCollision(e) =>
