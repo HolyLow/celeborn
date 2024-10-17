@@ -18,7 +18,6 @@
 package org.apache.celeborn.common.util
 
 import java.util
-
 import org.apache.celeborn.CelebornFunSuite
 import org.apache.celeborn.common.CelebornConf
 import org.apache.celeborn.common.client.{MasterEndpointResolver, StaticMasterEndpointResolver}
@@ -26,6 +25,8 @@ import org.apache.celeborn.common.exception.CelebornException
 import org.apache.celeborn.common.protocol.{PartitionLocation, TransportModuleConstants}
 import org.apache.celeborn.common.protocol.message.ControlMessages.{GetReducerFileGroupResponse, MapperEnd}
 import org.apache.celeborn.common.protocol.message.StatusCode
+
+import java.util.Collections
 
 class UtilsSuite extends CelebornFunSuite {
 
@@ -196,7 +197,7 @@ class UtilsSuite extends CelebornFunSuite {
     fileGroup.put(2, partitionLocation(2))
 
     val attempts = Array(0, 0, 1)
-    val response = GetReducerFileGroupResponse(StatusCode.STAGE_ENDED, fileGroup, attempts)
+    val response = GetReducerFileGroupResponse(StatusCode.STAGE_ENDED, fileGroup, attempts, Collections.emptySet[Integer](), false)
     val responseTrans = Utils.fromTransportMessage(Utils.toTransportMessage(response)).asInstanceOf[
       GetReducerFileGroupResponse]
 

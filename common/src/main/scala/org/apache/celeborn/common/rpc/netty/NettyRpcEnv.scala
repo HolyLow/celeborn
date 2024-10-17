@@ -23,18 +23,16 @@ import java.nio.ByteBuffer
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.annotation.Nullable
-
 import scala.collection.JavaConverters.seqAsJavaListConverter
 import scala.concurrent.{Future, Promise}
 import scala.reflect.ClassTag
 import scala.util.{DynamicVariable, Failure, Success}
 import scala.util.control.NonFatal
-
 import org.apache.celeborn.common.CelebornConf
 import org.apache.celeborn.common.internal.Logging
 import org.apache.celeborn.common.network.TransportContext
 import org.apache.celeborn.common.network.client._
-import org.apache.celeborn.common.network.protocol.{RequestMessage => NRequestMessage, RpcRequest}
+import org.apache.celeborn.common.network.protocol.{RpcRequest, TransportMessage, RequestMessage => NRequestMessage}
 import org.apache.celeborn.common.network.sasl.{SaslClientBootstrap, SaslServerBootstrap}
 import org.apache.celeborn.common.network.sasl.registration.{RegistrationClientBootstrap, RegistrationServerBootstrap}
 import org.apache.celeborn.common.network.server._
@@ -500,6 +498,15 @@ private[celeborn] class RequestMessage(
       writeRpcAddress(out, senderAddress)
       writeRpcAddress(out, receiver.address)
       out.writeUTF(receiver.name)
+      val msg = Utils.toTransportMessage(content)
+      msg match {
+        case transMsg : TransportMessage =>
+          if (transMsg.forCpp()) {
+            out.writeByte(0xFF.toByte)
+            out.write(transMsg.toByteBuffer.array())
+            return bos.toByteBuffer
+          }
+      }
       val s = nettyEnv.serializeStream(out)
       try {
         s.writeObject(Utils.toTransportMessage(content))

@@ -228,7 +228,7 @@ class MapPartitionCommitHandler(
     shuffleIsSegmentGranularityVisible.get(shuffleId)
   }
 
-  override def handleGetReducerFileGroup(context: RpcCallContext, shuffleId: Int): Unit = {
+  override def handleGetReducerFileGroup(context: RpcCallContext, shuffleId: Int, isCpp: Boolean): Unit = {
     // TODO: if support the downstream map task start early before the upstream reduce task, it should
     //  waiting the upstream task register shuffle, then reply these GetReducerFileGroup.
     //  Note that flink hybrid shuffle should support it in the future.
@@ -242,7 +242,8 @@ class MapPartitionCommitHandler(
       StatusCode.SUCCESS,
       reducerFileGroupsMap.getOrDefault(shuffleId, JavaUtils.newConcurrentHashMap()),
       getMapperAttempts(shuffleId),
-      succeedPartitionIds))
+      succeedPartitionIds,
+      isCpp))
   }
 
   override def releasePartitionResource(shuffleId: Int, partitionId: Int): Unit = {

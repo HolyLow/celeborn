@@ -1658,7 +1658,7 @@ public class ShuffleClientImpl extends ShuffleClient {
           logger.warn(exceptionMsg);
         } else {
           GetReducerFileGroup getReducerFileGroup =
-              new GetReducerFileGroup(shuffleId, isSegmentGranularityVisible);
+              new GetReducerFileGroup(shuffleId, isSegmentGranularityVisible, false);
 
           GetReducerFileGroupResponse response =
               lifecycleManagerRef.askSync(

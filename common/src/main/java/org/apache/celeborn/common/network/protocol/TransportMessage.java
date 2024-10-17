@@ -36,11 +36,17 @@ public class TransportMessage implements Serializable {
   @Deprecated private final transient MessageType type;
   private final int messageTypeValue;
   private final byte[] payload;
+  private final boolean isCpp;
 
   public TransportMessage(MessageType type, byte[] payload) {
+    this(type, payload, false);
+  }
+
+  public TransportMessage(MessageType type, byte[] payload, boolean isCpp) {
     this.type = type;
     this.messageTypeValue = type.getNumber();
     this.payload = payload;
+    this.isCpp = isCpp;
   }
 
   public MessageType getType() {
@@ -53,6 +59,10 @@ public class TransportMessage implements Serializable {
 
   public byte[] getPayload() {
     return payload;
+  }
+
+  public boolean forCpp() {
+    return isCpp;
   }
 
   public <T extends GeneratedMessageV3> T getParsedPayload() throws InvalidProtocolBufferException {
@@ -130,6 +140,10 @@ public class TransportMessage implements Serializable {
   }
 
   public static TransportMessage fromByteBuffer(ByteBuffer buffer) throws CelebornIOException {
+    return fromByteBuffer(buffer, false);
+  }
+
+  public static TransportMessage fromByteBuffer(ByteBuffer buffer, boolean isCpp) throws CelebornIOException {
     int messageTypeValue = buffer.getInt();
     if (MessageType.forNumber(messageTypeValue) == null) {
       throw new CelebornIOException("Decode failed, fallback to legacy messages.");
@@ -138,6 +152,6 @@ public class TransportMessage implements Serializable {
     byte[] payload = new byte[payloadLen];
     buffer.get(payload);
     MessageType msgType = MessageType.forNumber(messageTypeValue);
-    return new TransportMessage(msgType, payload);
+    return new TransportMessage(msgType, payload, isCpp);
   }
 }

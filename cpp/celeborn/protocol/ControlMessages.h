@@ -9,7 +9,7 @@
 
 namespace celeborn {
 struct GetReducerFileGroup {
-  long shuffleId;
+  int shuffleId;
 
   TransportMessage toTransportMessage() const;
 };

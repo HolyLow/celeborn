@@ -26,7 +26,7 @@ void ShuffleClientImpl::setupLifecycleManagerRef(
 }
 
 std::unique_ptr<CelebornInputStream> ShuffleClientImpl::readPartition(
-    long shuffleId,
+    int shuffleId,
     int partitionId,
     int attemptNumber,
     int startMapIndex,
@@ -50,7 +50,7 @@ std::unique_ptr<CelebornInputStream> ShuffleClientImpl::readPartition(
       endMapIndex);
 }
 
-void ShuffleClientImpl::updateReducerFileGroup(long shuffleId) {
+void ShuffleClientImpl::updateReducerFileGroup(int shuffleId) {
   CELEBORN_CHECK(
       lifecycleManagerRef_, "lifecycleManagerRef_ is not initialized");
   // Send the query request to lifecycleManager.
@@ -87,14 +87,14 @@ void ShuffleClientImpl::updateReducerFileGroup(long shuffleId) {
   }
 }
 
-bool ShuffleClientImpl::cleanupShuffle(long shuffleId) {
+bool ShuffleClientImpl::cleanupShuffle(int shuffleId) {
   std::lock_guard<std::mutex> lock(mutex_);
   reducerFileGroupInfos_.erase(shuffleId);
   return true;
 }
 
 GetReducerFileGroupResponse& ShuffleClientImpl::getReducerFileGroupInfo(
-    long shuffleId) {
+    int shuffleId) {
   {
     std::lock_guard<std::mutex> lock(mutex_);
     auto iter = reducerFileGroupInfos_.find(shuffleId);

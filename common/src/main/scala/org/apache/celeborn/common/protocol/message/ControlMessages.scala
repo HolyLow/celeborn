@@ -277,7 +277,7 @@ object ControlMessages extends Logging {
 
   case class MapperEndResponse(status: StatusCode) extends MasterMessage
 
-  case class GetReducerFileGroup(shuffleId: Int, isSegmentGranularityVisible: Boolean)
+  case class GetReducerFileGroup(shuffleId: Int, isSegmentGranularityVisible: Boolean, isCpp: Boolean)
     extends MasterMessage
 
   // util.Set[String] -> util.Set[Path.toString]
@@ -286,7 +286,8 @@ object ControlMessages extends Logging {
       status: StatusCode,
       fileGroup: util.Map[Integer, util.Set[PartitionLocation]],
       attempts: Array[Int],
-      partitionIds: util.Set[Integer] = Collections.emptySet[Integer]())
+      partitionIds: util.Set[Integer] = Collections.emptySet[Integer](),
+      isCpp: Boolean)
     extends MasterMessage
 
   object WorkerExclude {
@@ -707,14 +708,14 @@ object ControlMessages extends Logging {
         .build().toByteArray
       new TransportMessage(MessageType.MAPPER_END_RESPONSE, payload)
 
-    case GetReducerFileGroup(shuffleId, isSegmentGranularityVisible) =>
+    case GetReducerFileGroup(shuffleId, isSegmentGranularityVisible, isCpp) =>
       val payload = PbGetReducerFileGroup.newBuilder()
         .setShuffleId(shuffleId)
         .setIsSegmentGranularityVisible(isSegmentGranularityVisible)
         .build().toByteArray
-      new TransportMessage(MessageType.GET_REDUCER_FILE_GROUP, payload)
+      new TransportMessage(MessageType.GET_REDUCER_FILE_GROUP, payload, isCpp)
 
-    case GetReducerFileGroupResponse(status, fileGroup, attempts, partitionIds) =>
+    case GetReducerFileGroupResponse(status, fileGroup, attempts, partitionIds, isCpp) =>
       val builder = PbGetReducerFileGroupResponse
         .newBuilder()
         .setStatus(status.getValue)
@@ -728,7 +729,7 @@ object ControlMessages extends Logging {
       builder.addAllAttempts(attempts.map(Integer.valueOf).toIterable.asJava)
       builder.addAllPartitionIds(partitionIds)
       val payload = builder.build().toByteArray
-      new TransportMessage(MessageType.GET_REDUCER_FILE_GROUP_RESPONSE, payload)
+      new TransportMessage(MessageType.GET_REDUCER_FILE_GROUP_RESPONSE, payload, isCpp)
 
     case pb: PbWorkerExclude =>
       new TransportMessage(MessageType.WORKER_EXCLUDE, pb.toByteArray)
@@ -1116,7 +1117,8 @@ object ControlMessages extends Logging {
         val pbGetReducerFileGroup = PbGetReducerFileGroup.parseFrom(message.getPayload)
         GetReducerFileGroup(
           pbGetReducerFileGroup.getShuffleId,
-          pbGetReducerFileGroup.getIsSegmentGranularityVisible)
+          pbGetReducerFileGroup.getIsSegmentGranularityVisible,
+          message.forCpp())
 
       case GET_REDUCER_FILE_GROUP_RESPONSE_VALUE =>
         val pbGetReducerFileGroupResponse = PbGetReducerFileGroupResponse
@@ -1135,7 +1137,8 @@ object ControlMessages extends Logging {
           Utils.toStatusCode(pbGetReducerFileGroupResponse.getStatus),
           fileGroup,
           attempts,
-          partitionIds)
+          partitionIds,
+          message.forCpp())
 
       case GET_SHUFFLE_ID_VALUE =>
         message.getParsedPayload()

@@ -11,16 +11,16 @@ class ShuffleClient {
   virtual void setupLifecycleManagerRef(
       std::shared_ptr<NettyRpcEndpointRef>& lifecycleManagerRef) = 0;
 
-  virtual void updateReducerFileGroup(long shuffleId) = 0;
+  virtual void updateReducerFileGroup(int shuffleId) = 0;
 
   virtual std::unique_ptr<CelebornInputStream> readPartition(
-      long shuffleId,
+      int shuffleId,
       int partitionId,
       int attemptNumber,
       int startMapIndex,
       int endMapIndex) = 0;
 
-  virtual bool cleanupShuffle(long shuffleId) = 0;
+  virtual bool cleanupShuffle(int shuffleId) = 0;
 
   virtual void shutdown() = 0;
 };
@@ -38,20 +38,20 @@ class ShuffleClientImpl : public ShuffleClient {
       std::shared_ptr<NettyRpcEndpointRef>& lifecycleManagerRef) override;
 
   std::unique_ptr<CelebornInputStream> readPartition(
-      long shuffleId,
+      int shuffleId,
       int partitionId,
       int attemptNumber,
       int startMapIndex,
       int endMapIndex) override;
 
-  void updateReducerFileGroup(long shuffleId) override;
+  void updateReducerFileGroup(int shuffleId) override;
 
-  bool cleanupShuffle(long shuffleId) override;
+  bool cleanupShuffle(int shuffleId) override;
 
   void shutdown() override {}
 
  private:
-  GetReducerFileGroupResponse& getReducerFileGroupInfo(long shuffleId);
+  GetReducerFileGroupResponse& getReducerFileGroupInfo(int shuffleId);
 
   const std::string appUniqueId_;
   std::shared_ptr<const CelebornConf> conf_;
