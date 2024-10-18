@@ -506,6 +506,7 @@ private[celeborn] class RequestMessage(
             out.write(transMsg.toByteBuffer.array())
             return bos.toByteBuffer
           }
+        case _ =>
       }
       val s = nettyEnv.serializeStream(out)
       try {

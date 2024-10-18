@@ -47,7 +47,7 @@ void testFollyFuture() {
 
 int main(int argc, char** argv) {
   folly::Init init(&argc, &argv);
-  testFollyFuture();
+  //testFollyFuture();
 
   google::SetCommandLineOption("GLOG_minloglevel", "0");
   FLAGS_logtostderr = 1;
@@ -87,8 +87,10 @@ int main(int argc, char** argv) {
     int totalCnt = 0;
     do {
       readCnt = inputStream->read((uint8_t*)buffer, 0, 4096);
-      if (readCnt > 0)
+      if (readCnt > 0) {
         totalCnt += readCnt;
+	      std::cout << "read " << readCnt << " bytes, " << totalCnt << " bytes in total\n";
+      }
     } while (readCnt > 0);
 
     streams.emplace_back(std::move(inputStream));

@@ -109,6 +109,7 @@ private[celeborn] class JavaSerializerInstance(
           out.close()
           return bos.toByteBuffer
         }
+      case _ =>
     }
     val out = serializeStream(bos)
     out.writeObject(Utils.toTransportMessage(t))
@@ -117,7 +118,9 @@ private[celeborn] class JavaSerializerInstance(
   }
 
   override def deserialize[T: ClassTag](bytes: ByteBuffer): T = {
-    val isCppMessage = bytes.asReadOnlyBuffer().get()
+    bytes.mark
+    val isCppMessage = bytes.get()
+    bytes.reset
     if (isCppMessage == 0xFF.toByte) {
       bytes.get()
       return Utils.fromTransportMessage(TransportMessage.fromByteBuffer(bytes, true)).asInstanceOf[T]
@@ -128,7 +131,9 @@ private[celeborn] class JavaSerializerInstance(
   }
 
   override def deserialize[T: ClassTag](bytes: ByteBuffer, loader: ClassLoader): T = {
-    val isCppMessage = bytes.asReadOnlyBuffer().get()
+    bytes.mark
+    val isCppMessage = bytes.get()
+    bytes.reset
     if (isCppMessage == 0xFF.toByte) {
       bytes.get()
       return Utils.fromTransportMessage(TransportMessage.fromByteBuffer(bytes, true)).asInstanceOf[T]
