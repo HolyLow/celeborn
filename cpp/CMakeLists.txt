@@ -259,3 +259,9 @@ install(EXPORT celeborn-exports
         FILE celeborn-targets.cmake
         NAMESPACE celeborn::
         DESTINATION ${CMAKE_INSTALL_DIR})
+
+option(BUILD_EXAMPLES "BUILD_EXAMPLES" ON)
+
+if(BUILD_EXAMPLES)
+    add_subdirectory(celeborn)
+endif()

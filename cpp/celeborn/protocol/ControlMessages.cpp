@@ -25,6 +25,7 @@ GetReducerFileGroupResponse::fromTransportMessage(
   auto fileGroups = pbGetReducerFileGroupResponse->filegroups();
   for (auto& kv : fileGroups) {
     auto& fileGroup = response->fileGroups[kv.first];
+
     for (const auto& location : kv.second.locations()) {
       fileGroup.insert(PartitionLocation::fromPb(location));
     }
