@@ -1,10 +1,12 @@
 #pragma once
 
+#include <charconv>
 #include <chrono>
 #include <set>
 #include <vector>
 
 #include "celeborn/memory/ByteBuffer.h"
+#include "celeborn/utils/Exceptions.h"
 
 namespace celeborn {
 #define CELEBORN_STARTUP_LOG_PREFIX "[CELEBORN_STARTUP] "
@@ -39,5 +41,34 @@ using Duration = std::chrono::duration<double>;
 using Timeout = std::chrono::milliseconds;
 inline Timeout toTimeout(Duration duration) {
   return std::chrono::duration_cast<Timeout>(duration);
+}
+
+/// parse string like "Any-Host-Str:Port#1:Port#2:...:Port#num", split into
+/// {"Any-Host-Str", "Port#1", "Port#2", ..., "Port#num"}. Note that the
+/// "Any-Host_Str" might contain ':' in IPV6 address.
+std::vector<std::string_view> parseColonSeparatedHostPorts(
+    const std::string_view& s,
+    int num);
+
+std::vector<std::string_view> explode(const std::string_view& s, char delim);
+
+std::tuple<std::string_view, std::string_view> split(
+    const std::string_view& s,
+    char delim);
+
+template <class T>
+T strv2val(const std::string_view& s) {
+  T t;
+  const char* first = s.data();
+  const char* last = s.data() + s.size();
+  std::from_chars_result res = std::from_chars(first, last, t);
+
+  // These two exceptions reflect the behavior of std::stoi.
+  if (res.ec == std::errc::invalid_argument) {
+    CELEBORN_FAIL("Invalid argument when parsing");
+  } else if (res.ec == std::errc::result_out_of_range) {
+    CELEBORN_FAIL("Out of range when parsing");
+  }
+  return t;
 }
 } // namespace celeborn

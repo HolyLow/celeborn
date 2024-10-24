@@ -10,7 +10,7 @@ target_link_libraries(
         proto
         network
         protocol
-        reader
+        client
         ${WANGLE}
         ${FIZZ}
         ${LIBSODIUM_LIBRARY}
@@ -19,6 +19,6 @@ target_link_libraries(
         ${GFLAGS_LIBRARIES}
 )
 
-add_executable(client ReaderClient.cpp)
+add_executable(reader ReaderClient.cpp)
 
-target_link_libraries(client readerClient)
+target_link_libraries(reader readerClient)

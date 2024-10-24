@@ -1,13 +1,13 @@
 add_library(
-        reader
+        client
         reader/CelebornInputStream.cpp
         ShuffleClient.cpp
         reader/WorkerPartitionReader.cpp)
 
-target_include_directories(reader PUBLIC ${CMAKE_BINARY_DIR})
+target_include_directories(client PUBLIC ${CMAKE_BINARY_DIR})
 
 target_link_libraries(
-        reader
+        client
         network
         proto
         memory
