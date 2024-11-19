@@ -19,13 +19,15 @@ set -eufx -o pipefail
 SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)
 source ${SCRIPT_DIR}/docker-vars.sh
 
-PROJECT_DIR=$(dirname($(dirname ${SCRIPT_DIR})))
+PROJECT_DIR=$(dirname $(dirname ${SCRIPT_DIR}))
 MOUNT_DIR="/celeborn"
 CONTAINER_NAME="celeborn-cpp-dev-container"
 
 # Launch the container in interactive mode.
-docker run -it --rm \
-    ${IMAGE_NAME}:${IMAGE_TAG} \
+docker run \
     -v ${PROJECT_DIR}:${MOUNT_DIR} \
     -w ${MOUNT_DIR} \
-    --name ${CONTAINER_NAME}
+    -it --rm \
+    --name ${CONTAINER_NAME} \
+    ${IMAGE_NAME}:${IMAGE_TAG} \
+    /bin/bash
