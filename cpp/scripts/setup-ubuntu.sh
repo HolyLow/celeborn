@@ -47,26 +47,6 @@ DEPENDENCY_DIR=${DEPENDENCY_DIR:-$(pwd)/deps-download}
 DEPENDENCY_DIR=${DEPENDENCY_DIR:-$(pwd)/deps-download}
 OS_CXXFLAGS=""
 
-function run_and_time {
-  time "$@" || (echo "Failed to run $* ." ; exit 1 )
-  { echo "+ Finished running $*"; } 2> /dev/null
-}
-
-function prompt {
-  (
-    while true; do
-      local input="${PROMPT_ALWAYS_RESPOND:-}"
-      echo -n "$(tput bold)$* [Y, n]$(tput sgr0) "
-      [[ -z "${input}" ]] && read input
-      if [[ "${input}" == "Y" || "${input}" == "y" || "${input}" == "" ]]; then
-        return 0
-      elif [[ "${input}" == "N" || "${input}" == "n" ]]; then
-        return 1
-      fi
-    done
-  ) 2> /dev/null
-}
-
 function install_clang15 {
   VERSION=`cat /etc/os-release | grep VERSION_ID`
   if [[ ! ${VERSION} =~ "22.04" && ! ${VERSION} =~ "24.04" ]]; then
