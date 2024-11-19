@@ -205,7 +205,7 @@ function cmake_install {
   # Add platform specific CXX flags if any
   COMPILER_FLAGS+=${OS_CXXFLAGS}
 
-  # CMAKE_POSITION_INDEPENDENT_CODE is required so that Velox can be built into dynamic libraries \
+  # CMAKE_POSITION_INDEPENDENT_CODE is required so that CelebornCpp can be built into dynamic libraries
   cmake -Wno-dev -B"${BINARY_DIR}" \
     -GNinja \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
