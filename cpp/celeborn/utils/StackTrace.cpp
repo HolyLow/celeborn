@@ -21,9 +21,9 @@
 // Symbolizer requires folly to be compiled with libelf and libdwarf support
 // (also currently only works in Linux).
 #if __linux__ && FOLLY_HAVE_ELF && FOLLY_HAVE_DWARF
-#define VELOX_HAS_SYMBOLIZER 1
+#define CELEBORN_HAS_SYMBOLIZER 1
 #else
-#define VELOX_HAS_SYMBOLIZER 0
+#define CELEBORN_HAS_SYMBOLIZER 0
 #endif
 
 #include <algorithm>
@@ -157,7 +157,7 @@ std::string StackTrace::log(
   return tracefn;
 }
 
-#if VELOX_HAS_SYMBOLIZER
+#if CELEBORN_HAS_SYMBOLIZER
 namespace {
 inline std::string translateFrameImpl(void* addressPtr) {
   // TODO: lineNumbers has been disabled since 2009.
@@ -176,7 +176,7 @@ inline std::string translateFrameImpl(void* addressPtr) {
 #endif
 
 std::string StackTrace::translateFrame(void* addressPtr, bool /*lineNumbers*/) {
-#if VELOX_HAS_SYMBOLIZER
+#if CELEBORN_HAS_SYMBOLIZER
   return folly::fibers::runInMainContext(
       [addressPtr]() { return translateFrameImpl(addressPtr); });
 #else
