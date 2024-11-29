@@ -275,6 +275,11 @@ install(EXPORT celeborn-exports
         DESTINATION ${CMAKE_INSTALL_DIR})
 
 option(BUILD_EXAMPLES "BUILD_EXAMPLES" ON)
+option(CELEBORN_BUILD_TESTS "CELEBORN_BUILD_TESTS" ON)
+
+if(CELEBORN_BUILD_TESTS)
+    find_package(GTest CONFIG REQUIRED)
+endif()
 
 if(BUILD_EXAMPLES)
     add_subdirectory(celeborn)
