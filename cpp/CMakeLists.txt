@@ -19,6 +19,7 @@ if (NOT DEFINED PACKAGE_VERSION)
 endif ()
 
 project("celeborn" VERSION ${PACKAGE_VERSION} LANGUAGES CXX C)
+enable_testing()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -279,6 +280,7 @@ option(CELEBORN_BUILD_TESTS "CELEBORN_BUILD_TESTS" ON)
 
 if(CELEBORN_BUILD_TESTS)
     find_package(GTest CONFIG REQUIRED)
+    include(CTest) # include after project() but before add_subdirectory()
 endif()
 
 if(BUILD_EXAMPLES)

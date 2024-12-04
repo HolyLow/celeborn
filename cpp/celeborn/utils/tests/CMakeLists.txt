@@ -15,7 +15,7 @@
 
 add_executable(celeborn_utils_test ExceptionTest.cpp)
 
-add_test(celeborn_utils_test celeborn_utils_test)
+add_test(NAME celeborn_utils_test COMMAND celeborn_utils_test)
 
 target_link_libraries(
         celeborn_utils_test
