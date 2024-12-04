@@ -171,6 +171,10 @@ add_custom_command(
         COMMAND protoc --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/celeborn/proto --cpp_out=${CMAKE_BINARY_DIR}/celeborn/proto ${ProtoFile}
         DEPENDS ${ProtoFile}
         VERBATIM)
+add_custom_target(
+        generate_proto_source
+        DEPENDS
+        ${ProtoGenSource} ${ProtoGenHeader})
 
 set(CELEBORN_SHALLOW_HEADER_DIRS
         celeborn/conf

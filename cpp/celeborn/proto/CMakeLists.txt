@@ -13,4 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 add_library(proto STATIC ${ProtoGenSource} ${ProtoGenHeader})
+add_dependencies(proto generate_proto_source)
 target_link_libraries(proto ${Boost_LIBRARIES} ${PROTOBUF_LIBRARY})
