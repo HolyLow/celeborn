@@ -18,6 +18,7 @@
 #pragma once
 
 namespace celeborn {
+// todo: should this be aligned with java end?
 enum StatusCode {
   // 1/0 Status
   SUCCESS = 0,

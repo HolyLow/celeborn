@@ -23,3 +23,7 @@ target_link_libraries(
         ${GLOG}
         ${GFLAGS_LIBRARIES}
 )
+
+if(CELEBORN_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()

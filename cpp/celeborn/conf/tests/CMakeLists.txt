@@ -12,21 +12,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-add_library(
-        conf
-        BaseConf.cpp
-        CelebornConf.cpp)
+
+add_executable(celeborn_conf_test BaseConfTest.cpp)
+
+add_test(NAME celeborn_conf_test COMMAND celeborn_conf_test)
 
 target_link_libraries(
+        celeborn_conf_test
+        PRIVATE
         conf
-        utils
-        memory
+        # todo: remove unused...
+        ${WANGLE}
+        ${FIZZ}
+        ${LIBSODIUM_LIBRARY}
         ${FOLLY_WITH_DEPENDENCIES}
         ${GLOG}
         ${GFLAGS_LIBRARIES}
-        ${RE2}
-)
-
-if(CELEBORN_BUILD_TESTS)
-    add_subdirectory(tests)
-endif()
+        GTest::gtest
+        GTest::gmock
+        GTest::gtest_main)

@@ -1,5 +1,5 @@
 /*
- * Based on Config.cpp from Facebook Velox
+ * Based on Config.h from Facebook Velox
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
  *

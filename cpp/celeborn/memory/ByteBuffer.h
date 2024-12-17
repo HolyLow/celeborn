@@ -55,8 +55,6 @@ class ByteBuffer {
       const ReadOnlyByteBuffer& buffer);
 };
 
-class ReadOnlyByteBuffer;
-
 class ReadOnlyByteBuffer : public ByteBuffer {
  public:
   friend class ByteBuffer;
