@@ -21,10 +21,6 @@ target_link_libraries(
         celeborn_conf_test
         PRIVATE
         conf
-        # todo: remove unused...
-        ${WANGLE}
-        ${FIZZ}
-        ${LIBSODIUM_LIBRARY}
         ${FOLLY_WITH_DEPENDENCIES}
         ${GLOG}
         ${GFLAGS_LIBRARIES}
