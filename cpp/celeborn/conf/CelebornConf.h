@@ -33,9 +33,12 @@ namespace celeborn {
  */
 
 class CelebornConf : public BaseConf {
-public:
+ public:
+  static const std::unordered_map<std::string, folly::Optional<std::string>>
+      kDefaultProperties;
+
   static constexpr std::string_view kRpcLookupTimeout{
-    "celeborn.rpc.lookupTimeout"};
+      "celeborn.rpc.lookupTimeout"};
 
   static constexpr std::string_view kClientRpcGetReducerFileGroupRpcAskTimeout{
       "celeborn.client.rpc.getReducerFileGroup.askTimeout"};
@@ -56,6 +59,14 @@ public:
       "celeborn.client.fetch.maxReqsInFlight"};
 
   CelebornConf();
+
+  CelebornConf(const std::string& filename);
+
+  CelebornConf(const CelebornConf& other);
+
+  CelebornConf(CelebornConf&& other) = delete;
+
+  void registerProperty(const std::string_view& key, const std::string& value);
 
   Timeout rpcLookupTimeout() const;
 

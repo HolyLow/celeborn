@@ -27,14 +27,11 @@ std::string bool2String(bool value) {
   return value ? "true" : "false";
 }
 
-#define STR_PROP(_key_, _val_) \
-  { std::string(_key_), std::string(_val_) }
+#define STR_PROP(_key_, _val_) {std::string(_key_), std::string(_val_)}
 #define NUM_PROP(_key_, _val_) \
-  { std::string(_key_), folly::to<std::string>(_val_) }
-#define BOOL_PROP(_key_, _val_) \
-  { std::string(_key_), bool2String(_val_) }
-#define NONE_PROP(_key_) \
-  { std::string(_key_), folly::none }
+  {std::string(_key_), folly::to<std::string>(_val_)}
+#define BOOL_PROP(_key_, _val_) {std::string(_key_), bool2String(_val_)}
+#define NONE_PROP(_key_) {std::string(_key_), folly::none}
 
 enum class CapacityUnit {
   BYTE,
@@ -129,19 +126,44 @@ Duration toDuration(const std::string& str) {
 
 } // namespace
 
+const std::unordered_map<std::string, folly::Optional<std::string>>
+    CelebornConf::kDefaultProperties = {
+        STR_PROP(kRpcLookupTimeout, "30s"),
+        STR_PROP(kClientRpcGetReducerFileGroupRpcAskTimeout, "240s"),
+        STR_PROP(kNetworkConnectTimeout, "10s"),
+        STR_PROP(kClientFetchTimeout, "600s"),
+        NUM_PROP(kNetworkIoNumConnectionsPerPeer, "1"),
+        NUM_PROP(kNetworkIoClientThreads, 0),
+        NUM_PROP(kClientFetchMaxReqsInFlight, 3),
+        // NUM_PROP(kNumExample, 50'000),
+        // BOOL_PROP(kBoolExample, false),
+};
+
 CelebornConf::CelebornConf() {
-  registeredProps_ =
-      std::unordered_map<std::string, folly::Optional<std::string>>{
-          STR_PROP(kRpcLookupTimeout, "30s"),
-          STR_PROP(kClientRpcGetReducerFileGroupRpcAskTimeout, "240s"),
-          STR_PROP(kNetworkConnectTimeout, "10s"),
-          STR_PROP(kClientFetchTimeout, "600s"),
-          NUM_PROP(kNetworkIoNumConnectionsPerPeer, "1"),
-          NUM_PROP(kNetworkIoClientThreads, 0),
-          NUM_PROP(kClientFetchMaxReqsInFlight, 3),
-          // NUM_PROP(kNumExample, 50'000),
-          // BOOL_PROP(kBoolExample, false),
-      };
+  registeredProps_ = kDefaultProperties;
+}
+
+CelebornConf::CelebornConf(const std::string& filename) {
+  initialize(filename);
+  registeredProps_ = kDefaultProperties;
+}
+
+CelebornConf::CelebornConf(const CelebornConf& other) {
+  if (auto* memConfig =
+          dynamic_cast<core::MemConfigMutable*>(other.config_.get())) {
+    config_ =
+        std::make_unique<core::MemConfigMutable>(other.config_->valuesCopy());
+  } else {
+    config_ = std::make_unique<core::MemConfig>(other.config_->valuesCopy());
+  }
+  registeredProps_ = other.registeredProps_;
+  filePath_ = other.filePath_;
+}
+
+void CelebornConf::registerProperty(
+    const std::string_view& key,
+    const std::string& value) {
+  setValue(static_cast<std::string>(key), value);
 }
 
 Timeout CelebornConf::rpcLookupTimeout() const {
