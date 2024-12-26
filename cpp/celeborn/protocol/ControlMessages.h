@@ -20,7 +20,7 @@
 #include <map>
 #include <set>
 
-#include "celeborn/network/TransportMessage.h"
+#include "celeborn/protocol/TransportMessage.h"
 #include "celeborn/protocol/PartitionLocation.h"
 #include "celeborn/protocol/StatusCode.h"
 

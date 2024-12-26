@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "celeborn/network/TransportMessage.h"
+#include "celeborn/protocol/TransportMessage.h"
 #include "celeborn/utils/Exceptions.h"
 
 namespace celeborn {

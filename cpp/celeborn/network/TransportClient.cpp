@@ -18,7 +18,7 @@
 #include "celeborn/network/TransportClient.h"
 
 #include "celeborn/network/MessageDecoder.h"
-#include "celeborn/network/TransportMessage.h"
+#include "celeborn/protocol/TransportMessage.h"
 
 namespace celeborn {
 void ClientSerializeHandler::read(

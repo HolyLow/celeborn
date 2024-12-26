@@ -14,8 +14,9 @@
 # limitations under the License.
 add_library(
         protocol
-        ControlMessages.cpp
-        PartitionLocation.cpp)
+        PartitionLocation.cpp
+        TransportMessage.cpp
+        ControlMessages.cpp)
 
 target_include_directories(protocol PUBLIC ${CMAKE_BINARY_DIR})
 
@@ -23,8 +24,11 @@ target_link_libraries(
         protocol
         memory
         proto
-        network
         ${FOLLY_WITH_DEPENDENCIES}
         ${GLOG}
         ${GFLAGS_LIBRARIES}
 )
+
+if(CELEBORN_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()

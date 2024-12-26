@@ -18,7 +18,6 @@
 #pragma once
 
 namespace celeborn {
-// todo: should this be aligned with java end?
 enum StatusCode {
   // 1/0 Status
   SUCCESS = 0,
@@ -83,6 +82,11 @@ enum StatusCode {
   REVIVE_INITIALIZED = 47,
   DESTROY_SLOTS_MOCK_FAILURE = 48,
   COMMIT_FILES_MOCK_FAILURE = 49,
+  PUSH_DATA_FAIL_NON_CRITICAL_CAUSE_REPLICA = 50,
+  OPEN_STREAM_FAILED = 51,
+  SEGMENT_START_FAIL_REPLICA = 52,
+  SEGMENT_START_FAIL_PRIMARY = 53,
+  NO_SPLIT = 54,
 
   TAIL
 };

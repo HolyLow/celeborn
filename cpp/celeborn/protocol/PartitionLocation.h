@@ -18,6 +18,7 @@
 #pragma once
 
 #include <memory>
+
 #include "celeborn/proto/TransportMessagesCpp.pb.h"
 #include "celeborn/utils/Exceptions.h"
 
@@ -85,7 +86,6 @@ struct PartitionLocation {
   PartitionLocation(const PartitionLocation& other);
 
   std::string filename() const {
-    //    return fmt::format("{}-{}-{}", id, epoch, mode);
     return std::to_string(id) + "-" + std::to_string(epoch) + "-" +
         std::to_string(mode);
   }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "protocol/PartitionLocation.h"
+#include "celeborn/protocol/PartitionLocation.h"
 
 #include "celeborn/protocol/StatusCode.h"
 #include "celeborn/utils/CelebornUtils.h"
@@ -24,7 +24,7 @@
 namespace celeborn {
 std::unique_ptr<StorageInfo> StorageInfo::fromPb(const PbStorageInfo& pb) {
   auto result = std::make_unique<StorageInfo>();
-  result->type = (Type)pb.type();
+  result->type = static_cast<Type>(pb.type());
   result->mountPoint = pb.mountpoint();
   result->finalResult = pb.finalresult();
   result->filePath = pb.filepath();
@@ -58,7 +58,7 @@ std::unique_ptr<PartitionLocation> PartitionLocation::fromPackedPb(
   auto& workerIdStr = pb.workeridsset(pb.workerids(idx));
   auto workerIdParts = parseColonSeparatedHostPorts(workerIdStr, 4);
   std::string filePath = pb.filepaths(idx);
-  if (filePath != "") {
+  if (!filePath.empty()) {
     filePath = pb.mountpointsset(pb.mountpoints(idx)) + pb.filepaths(idx);
   }
 
@@ -73,7 +73,7 @@ std::unique_ptr<PartitionLocation> PartitionLocation::fromPackedPb(
   result->mode = static_cast<Mode>(pb.modes(idx));
   result->replicaPeer = nullptr;
   result->storageInfo = std::make_unique<StorageInfo>();
-  result->storageInfo->type = (StorageInfo::Type)pb.types(idx);
+  result->storageInfo->type = static_cast<StorageInfo::Type>(pb.types(idx));
   result->storageInfo->mountPoint = pb.mountpointsset(pb.mountpoints(idx));
   result->storageInfo->finalResult = pb.finalresult(idx);
   result->storageInfo->filePath = filePath;
