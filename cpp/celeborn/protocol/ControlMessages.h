@@ -20,9 +20,9 @@
 #include <map>
 #include <set>
 
-#include "celeborn/protocol/TransportMessage.h"
 #include "celeborn/protocol/PartitionLocation.h"
 #include "celeborn/protocol/StatusCode.h"
+#include "celeborn/protocol/TransportMessage.h"
 
 namespace celeborn {
 struct GetReducerFileGroup {
