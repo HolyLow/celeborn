@@ -36,19 +36,19 @@ GetReducerFileGroupResponse::fromTransportMessage(
   auto payload = transportMessage.payload();
   auto pbGetReducerFileGroupResponse =
       parseProto<PbGetReducerFileGroupResponse>(
-          (uint8_t*)payload.c_str(), payload.size());
+          reinterpret_cast<const uint8_t*>(payload.c_str()), payload.size());
   auto response = std::make_unique<GetReducerFileGroupResponse>();
   response->status = toStatusCode(pbGetReducerFileGroupResponse->status());
   auto fileGroups = pbGetReducerFileGroupResponse->filegroups();
   for (auto& kv : fileGroups) {
     auto& fileGroup = response->fileGroups[kv.first];
-    // legacy mode: the locations are valid. use it.
+    // Legacy mode: the locations are valid, so use it.
     if (kv.second.locations().size() > 0) {
       for (const auto& location : kv.second.locations()) {
         fileGroup.insert(PartitionLocation::fromPb(location));
       }
     }
-    // packed mode: must use packedPartitionLocations.
+    // Packed mode: must use packedPartitionLocations.
     else {
       auto& pbPackedPartitionLocationsPair = kv.second.partitionlocationspair();
       int inputLocationSize =
@@ -125,8 +125,8 @@ std::unique_ptr<StreamHandler> StreamHandler::fromTransportMessage(
       transportMessage.type() == STREAM_HANDLER,
       "transportMessageType should be STREAM_HANDLER");
   auto payload = transportMessage.payload();
-  auto pbStreamHandler =
-      parseProto<PbStreamHandler>((uint8_t*)payload.c_str(), payload.size());
+  auto pbStreamHandler = parseProto<PbStreamHandler>(
+      reinterpret_cast<const uint8_t*>(payload.c_str()), payload.size());
   auto streamHandler = std::make_unique<StreamHandler>();
   streamHandler->streamId = pbStreamHandler->streamid();
   streamHandler->numChunks = pbStreamHandler->numchunks();

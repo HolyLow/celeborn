@@ -22,6 +22,7 @@
 
 using namespace celeborn;
 
+namespace {
 std::unique_ptr<PbStorageInfo> generateStorageInfoPb() {
   auto pbStorageInfo = std::make_unique<PbStorageInfo>();
   pbStorageInfo->set_type(1);
@@ -61,6 +62,42 @@ void verifyBasicPartitionLocation(const PartitionLocation* partitionLocation) {
   EXPECT_EQ(partitionLocation->fetchPort, 1003);
   EXPECT_EQ(partitionLocation->replicatePort, 1004);
 }
+
+void generatePackedPartitionLocationPb(
+    PbPackedPartitionLocations& pbPackedPartitionLocations,
+    int idx,
+    PartitionLocation::Mode mode) {
+  pbPackedPartitionLocations.add_ids(1);
+  pbPackedPartitionLocations.add_epoches(101);
+  pbPackedPartitionLocations.add_workerids(idx);
+  pbPackedPartitionLocations.add_workeridsset("test-host:1001:1002:1003:1004");
+  pbPackedPartitionLocations.add_mountpoints(idx);
+  pbPackedPartitionLocations.add_mountpointsset("test-mountpoint/");
+  pbPackedPartitionLocations.add_filepaths("test-filepath");
+  pbPackedPartitionLocations.add_types(1);
+  pbPackedPartitionLocations.add_finalresult(true);
+  pbPackedPartitionLocations.add_availablestoragetypes(1);
+  pbPackedPartitionLocations.add_modes(mode);
+}
+
+void verifyUnpackedPartitionLocation(
+    const PartitionLocation* partitionLocation) {
+  EXPECT_EQ(partitionLocation->id, 1);
+  EXPECT_EQ(partitionLocation->epoch, 101);
+  EXPECT_EQ(partitionLocation->host, "test-host");
+  EXPECT_EQ(partitionLocation->rpcPort, 1001);
+  EXPECT_EQ(partitionLocation->pushPort, 1002);
+  EXPECT_EQ(partitionLocation->fetchPort, 1003);
+  EXPECT_EQ(partitionLocation->replicatePort, 1004);
+
+  auto storageInfo = partitionLocation->storageInfo.get();
+  EXPECT_EQ(storageInfo->type, 1);
+  EXPECT_EQ(storageInfo->mountPoint, "test-mountpoint/");
+  EXPECT_EQ(storageInfo->finalResult, true);
+  EXPECT_EQ(storageInfo->filePath, "test-mountpoint/test-filepath");
+  EXPECT_EQ(storageInfo->availableStorageTypes, 1);
+}
+} // namespace
 
 TEST(PartitionLocationTest, storageInfoFromPb) {
   auto pbStorageInfo = generateStorageInfoPb();
@@ -108,4 +145,15 @@ TEST(PartitionLocationTest, fromPbWithPeer) {
   verifyBasicPartitionLocation(partitionLocationReplica);
   EXPECT_EQ(partitionLocationReplica->mode, PartitionLocation::Mode::REPLICA);
   verifyStorageInfo(partitionLocationReplica->storageInfo.get());
+}
+
+TEST(PartitionLocationTest, fromPackedPb) {
+  PbPackedPartitionLocations pbPackedPartitionLocations;
+  generatePackedPartitionLocationPb(
+      pbPackedPartitionLocations, 0, PartitionLocation::Mode::PRIMARY);
+
+  auto partitionLocation =
+      PartitionLocation::fromPackedPb(pbPackedPartitionLocations, 0);
+  verifyUnpackedPartitionLocation(partitionLocation.get());
+  EXPECT_EQ(partitionLocation->mode, PartitionLocation::Mode::PRIMARY);
 }
