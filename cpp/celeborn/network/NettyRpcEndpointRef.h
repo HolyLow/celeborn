@@ -34,6 +34,7 @@ class NettyRpcEndpointRef {
       int dstPort,
       const std::shared_ptr<TransportClient>& client);
 
+  // TODO: refactor to template function when needed.
   std::unique_ptr<GetReducerFileGroupResponse> askSync(
       const GetReducerFileGroup& msg,
       Timeout timeout);

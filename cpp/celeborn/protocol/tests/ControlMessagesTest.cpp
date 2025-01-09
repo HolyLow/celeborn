@@ -128,7 +128,6 @@ TEST(ControlMessagesTest, getReducerFileGroupResponseLegacyMode) {
   verifyBasicPartitionLocation(partitionLocations.begin()->get());
 }
 
-// todo...
 TEST(ControlMessagesTest, getReducerFileGroupResponsePackedMode) {
   PbGetReducerFileGroupResponse pbGetReducerFileGroupResponse;
   pbGetReducerFileGroupResponse.set_status(1);

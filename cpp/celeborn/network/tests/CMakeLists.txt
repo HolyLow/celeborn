@@ -12,18 +12,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-add_library(
-        network
-        Message.cpp
-        TransportClient.cpp
-        NettyRpcEndpointRef.cpp)
+
+add_executable(
+        celeborn_network_test
+        MessageDecoderTest.cpp)
+
+add_test(NAME celeborn_network_test COMMAND celeborn_network_test)
 
 target_include_directories(network PUBLIC ${CMAKE_BINARY_DIR})
 
 target_link_libraries(
-        network
-        proto
+        celeborn_network_test
+        PRIVATE
         memory
+        proto
         protocol
         utils
         ${WANGLE}
@@ -32,8 +34,6 @@ target_link_libraries(
         ${FOLLY_WITH_DEPENDENCIES}
         ${GLOG}
         ${GFLAGS_LIBRARIES}
-)
-
-if(CELEBORN_BUILD_TESTS)
-    add_subdirectory(tests)
-endif()
+        GTest::gtest
+        GTest::gmock
+        GTest::gtest_main)

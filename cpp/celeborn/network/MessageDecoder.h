@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <folly/io/Cursor.h>
 #include <wangle/codec/ByteToMessageDecoder.h>
 
 namespace celeborn {
@@ -26,7 +27,7 @@ namespace celeborn {
  * | encodedLength | msgType | bodyLength | encodedContent | bodyContent |
  * -----------------------------------------------------------------------
  * The size of each part is:
- *  -----------------------------------------------------------------------
+ * -----------------------------------------------------------------------
  * | 4             | 1       | 4          | #encodedLength | #bodyLength |
  * -----------------------------------------------------------------------
  * So the #headerLength is 4 + 1 + 4,
