@@ -51,7 +51,7 @@ WorkerPartitionReader::WorkerPartitionReader(
       shuffleKey, location_.filename(), startMapIndex_, endMapIndex_);
 
   RpcRequest request(
-      RpcRequest::nextRequestId(),
+      Message::nextRequestId(),
       openStream.toTransportMessage().toReadOnlyByteBuffer());
 
   // TODO: it might not be safe to call blocking & might failing command
@@ -66,7 +66,7 @@ WorkerPartitionReader::~WorkerPartitionReader() {
   BufferStreamEnd bufferStreamEnd;
   bufferStreamEnd.streamId = streamHandler_->streamId;
   RpcRequest request(
-      RpcRequest::nextRequestId(),
+      Message::nextRequestId(),
       bufferStreamEnd.toTransportMessage().toReadOnlyByteBuffer());
   client_->sendRpcRequestWithoutResponse(request);
 }
@@ -105,7 +105,7 @@ void WorkerPartitionReader::fetchChunks() {
     ChunkFetchRequest chunkFetchRequest;
     chunkFetchRequest.streamChunkSlice = streamChunkSlice;
     RpcRequest request(
-        RpcRequest::nextRequestId(),
+        Message::nextRequestId(),
         chunkFetchRequest.toTransportMessage().toReadOnlyByteBuffer());
     client_->fetchChunkAsync(streamChunkSlice, request, onSuccess_, onFailure_);
   }

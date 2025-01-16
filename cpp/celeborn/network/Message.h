@@ -59,6 +59,8 @@ class Message {
   Message(Type type, std::unique_ptr<ReadOnlyByteBuffer>&& body)
       : type_(type), body_(std::move(body)) {}
 
+  virtual ~Message() = default;
+
   Type type() const {
     return type_;
   }
@@ -67,12 +69,30 @@ class Message {
     return body_->clone();
   }
 
+  std::unique_ptr<ReadOnlyByteBuffer> encode() const;
+
   static std::unique_ptr<Message> decodeFrom(
       std::unique_ptr<ReadOnlyByteBuffer>&& data);
 
+  static long nextRequestId() {
+    return currRequestId_.fetch_add(1);
+  }
+
  protected:
+  virtual int internalEncodedLength() const {
+    CELEBORN_UNREACHABLE(
+        "unsupported message encodeLength type " + std::to_string(type_));
+  }
+
+  virtual void internalEncodeTo(WriteOnlyByteBuffer& buffer) const {
+    CELEBORN_UNREACHABLE(
+        "unsupported message internalEncodeTo type " + std::to_string(type_));
+  }
+
   Type type_;
   std::unique_ptr<ReadOnlyByteBuffer> body_;
+
+  static std::atomic<long> currRequestId_;
 };
 
 class RpcRequest : public Message {
@@ -85,19 +105,18 @@ class RpcRequest : public Message {
       : Message(RPC_REQUEST, other.body_->clone()),
         requestId_(other.requestId_) {}
 
+  virtual ~RpcRequest() = default;
+
   long requestId() const {
     return requestId_;
   }
 
-  std::unique_ptr<ReadOnlyByteBuffer> encode() const;
-
-  static long nextRequestId() {
-    return currRequestId_.fetch_add(1);
-  }
-
  private:
+  int internalEncodedLength() const override;
+
+  void internalEncodeTo(WriteOnlyByteBuffer& buffer) const override;
+
   long requestId_;
-  static std::atomic<long> currRequestId_;
 };
 
 class RpcResponse : public Message {

@@ -67,14 +67,29 @@ Message::Type Message::decodeType(uint8_t typeId) {
   }
 }
 
-std::atomic<long> RpcRequest::currRequestId_ = 1000;
+std::atomic<long> Message::currRequestId_ = 1000;
+
+std::unique_ptr<ReadOnlyByteBuffer> Message::encode() const {
+  int bodyLength = body_->remainingSize();
+  int encodedLength = internalEncodedLength();
+  int headerLength =
+      sizeof(int32_t) + sizeof(uint8_t) + sizeof(int32_t) + encodedLength;
+  auto buffer = ByteBuffer::createWriteOnly(headerLength);
+  buffer->write<int32_t>(encodedLength);
+  buffer->write<uint8_t>(type_);
+  buffer->write<int32_t>(bodyLength);
+  internalEncodeTo(*buffer);
+  auto header = ByteBuffer::toReadOnly(std::move(buffer));
+  auto combinedFrame = ByteBuffer::concat(*header, *body_);
+  return std::move(combinedFrame);
+}
 
 std::unique_ptr<Message> Message::decodeFrom(
     std::unique_ptr<ReadOnlyByteBuffer>&& data) {
   int32_t encodedLength = data->read<int32_t>();
   uint8_t typeId = data->read<uint8_t>();
   int32_t bodyLength = data->read<int32_t>();
-  assert(encodedLength + bodyLength == data->remainingSize());
+  CELEBORN_CHECK_EQ(encodedLength + bodyLength, data->remainingSize());
   Type type = decodeType(typeId);
   switch (type) {
     case RPC_RESPONSE:
@@ -90,19 +105,13 @@ std::unique_ptr<Message> Message::decodeFrom(
   }
 }
 
-std::unique_ptr<ReadOnlyByteBuffer> RpcRequest::encode() const {
-  int bodyLength = body_->remainingSize();
-  int encodedLength = 8 + 4;
-  int headerLength = 4 + 1 + 4 + encodedLength;
-  auto buffer = ByteBuffer::createWriteOnly(headerLength);
-  buffer->write<int32_t>(encodedLength);
-  buffer->write<uint8_t>(RPC_REQUEST);
-  buffer->write<int32_t>(bodyLength);
-  buffer->write<long>(requestId_);
-  buffer->write<int32_t>(bodyLength);
-  auto result = ByteBuffer::toReadOnly(std::move(buffer));
-  auto combined = ByteBuffer::concat(*result, *body_);
-  return std::move(combined);
+int RpcRequest::internalEncodedLength() const {
+  return sizeof(long) + sizeof(int32_t);
+}
+
+void RpcRequest::internalEncodeTo(WriteOnlyByteBuffer& buffer) const {
+  buffer.write<long>(requestId_);
+  buffer.write<int32_t>(body_->remainingSize());
 }
 
 std::unique_ptr<RpcResponse> RpcResponse::decodeFrom(

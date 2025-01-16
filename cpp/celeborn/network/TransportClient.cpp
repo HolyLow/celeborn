@@ -31,14 +31,7 @@ void ClientSerializeHandler::read(
 folly::Future<folly::Unit> ClientSerializeHandler::write(
     Context* ctx,
     std::unique_ptr<Message> msg) {
-  // TODO: currently we hand-craft the write procedure of RpcRequest.
-  // must be refactored when we support more messages.
-  CELEBORN_CHECK(
-      msg->type() == Message::RPC_REQUEST, "msgType should be RPC_REQUEST");
-  std::unique_ptr<RpcRequest> request(
-      reinterpret_cast<RpcRequest*>(msg.release()));
-
-  return ctx->fireWrite(request->encode()->getData());
+  return ctx->fireWrite(msg->encode()->getData());
 }
 
 void RpcClientDispatcher::read(Context*, std::unique_ptr<Message> toRecvMsg) {

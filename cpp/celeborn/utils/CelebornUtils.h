@@ -46,13 +46,19 @@ std::vector<T> toVector(const std::set<T>& in) {
 
 std::string makeShuffleKey(const std::string& appId, int shuffleId);
 
-void writeUTF(folly::io::Appender& appender, std::string msg);
+void writeUTF(folly::io::Appender& appender, const std::string& msg);
 
-void writeRpcAddress(folly::io::Appender& appender, std::string host, int port);
+void writeRpcAddress(
+    folly::io::Appender& appender,
+    const std::string& host,
+    int port);
 
-void writeUTF(WriteOnlyByteBuffer& buffer, std::string& msg);
+void writeUTF(WriteOnlyByteBuffer& buffer, const std::string& msg);
 
-void writeRpcAddress(WriteOnlyByteBuffer& buffer, std::string& host, int port);
+void writeRpcAddress(
+    WriteOnlyByteBuffer& buffer,
+    const std::string& host,
+    int port);
 
 using Duration = std::chrono::duration<double>;
 using Timeout = std::chrono::milliseconds;
