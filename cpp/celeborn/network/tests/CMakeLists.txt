@@ -16,7 +16,9 @@
 add_executable(
         celeborn_network_test
         MessageDecoderTest.cpp
-        MessageTest.cpp)
+        MessageTest.cpp
+        MessageDispatcherTest.cpp
+        TransportClientTest.cpp)
 
 add_test(NAME celeborn_network_test COMMAND celeborn_network_test)
 

@@ -15,6 +15,7 @@
 add_library(
         network
         Message.cpp
+        MessageDispatcher.cpp
         TransportClient.cpp
         NettyRpcEndpointRef.cpp)
 
