@@ -28,6 +28,7 @@ target_link_libraries(
         celeborn_network_test
         PRIVATE
         memory
+        conf
         proto
         protocol
         utils

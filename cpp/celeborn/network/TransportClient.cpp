@@ -47,7 +47,7 @@ RpcResponse TransportClient::sendRpcRequestSync(
     Timeout timeout) {
   try {
     auto requestMsg = std::make_unique<RpcRequest>(request);
-    auto future = (*dispatcher_)(std::move(requestMsg));
+    auto future = dispatcher_->sendRpcRequest(std::move(requestMsg));
     auto responseMsg = std::move(future).get(timeout);
     CELEBORN_CHECK(
         responseMsg->type() == Message::RPC_RESPONSE,
@@ -72,33 +72,6 @@ void TransportClient::sendRpcRequestWithoutResponse(const RpcRequest& request) {
     std::string errorMsg = fmt::format(
         "sendRpc failure, requestId: {}, errorMsg: {}",
         request.requestId(),
-        folly::exceptionStr(e).toStdString());
-    LOG(ERROR) << errorMsg;
-    CELEBORN_FAIL(errorMsg);
-  }
-}
-
-std::unique_ptr<ReadOnlyByteBuffer> TransportClient::fetchChunkSync(
-    const StreamChunkSlice& streamChunkSlice,
-    const RpcRequest& request,
-    Timeout timeout) {
-  try {
-    auto requestMsg = std::make_unique<RpcRequest>(request);
-    auto responseMsg =
-        dispatcher_
-            ->sendFetchChunkRequest(streamChunkSlice, std::move(requestMsg))
-            .get(timeout);
-    CELEBORN_CHECK(
-        responseMsg->type() == Message::CHUNK_FETCH_SUCCESS,
-        "responseMsgType should be CHUNK_FETCH_SUCCESS");
-    auto chunkFetchSuccess =
-        reinterpret_cast<ChunkFetchSuccess*>(responseMsg.get());
-    return chunkFetchSuccess->body();
-  } catch (const std::exception& e) {
-    std::string errorMsg = fmt::format(
-        "sendRpc failure, requestId: {}, timeout: {} errorMsg: {}",
-        request.requestId(),
-        timeout,
         folly::exceptionStr(e).toStdString());
     LOG(ERROR) << errorMsg;
     CELEBORN_FAIL(errorMsg);
@@ -185,8 +158,7 @@ std::shared_ptr<TransportClient> TransportClientFactory::createClient(
     std::lock_guard<std::mutex> lock(pool->mutex);
     // TODO: auto-disconnect if the connection is idle for a long time?
     if (pool->clients[clientId] && pool->clients[clientId]->active()) {
-      LOG(INFO) << "reusing client for address host " << host << " port "
-                << port;
+      VLOG(1) << "reusing client for address host " << host << " port " << port;
       return pool->clients[clientId];
     }
 
@@ -198,7 +170,6 @@ std::shared_ptr<TransportClient> TransportClientFactory::createClient(
       auto pipeline = bootstrap->connect(folly::SocketAddress(host, port))
                           .get(rpcLookupTimeout_);
 
-      // TODO: whether to use dispatcher or not should be reconsiderred
       auto dispatcher = std::make_unique<MessageDispatcher>();
       dispatcher->setPipeline(pipeline);
       pool->clients[clientId] = std::make_shared<TransportClient>(

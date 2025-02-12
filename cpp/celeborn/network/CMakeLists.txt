@@ -25,6 +25,7 @@ target_link_libraries(
         network
         proto
         memory
+        conf
         protocol
         utils
         ${WANGLE}

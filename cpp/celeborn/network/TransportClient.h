@@ -30,8 +30,10 @@
 #include "celeborn/utils/CelebornUtils.h"
 
 namespace celeborn {
-/// MessageSerializeHandler serializes Message into folly::IOBuf when write(),
-/// and deserializes folly::IOBuf into Message when read().
+/**
+ * MessageSerializeHandler serializes Message into folly::IOBuf when write(),
+ * and deserializes folly::IOBuf into Message when read().
+ */
 class MessageSerializeHandler : public wangle::Handler<
                                    std::unique_ptr<folly::IOBuf>,
                                    std::unique_ptr<Message>,
@@ -52,8 +54,10 @@ using FetchChunkFailureCallback = std::function<void(
     StreamChunkSlice streamChunkSlice,
     std::unique_ptr<std::exception> exception)>;
 
-/// TransportClient sends the messages to the network layer, and handles
-/// the message callback, timeout, error handling, etc.
+/**
+ * TransportClient sends the messages to the network layer, and handles
+ * the message callback, timeout, error handling, etc.
+ */
 class TransportClient {
  public:
   TransportClient(
@@ -69,17 +73,6 @@ class TransportClient {
 
   // Ignore the response, return immediately.
   void sendRpcRequestWithoutResponse(const RpcRequest& request);
-
-  std::unique_ptr<ReadOnlyByteBuffer> fetchChunkSync(
-      const StreamChunkSlice& streamChunkSlice,
-      const RpcRequest& request) {
-    return fetchChunkSync(streamChunkSlice, request, defaultTimeout_);
-  }
-
-  std::unique_ptr<ReadOnlyByteBuffer> fetchChunkSync(
-      const StreamChunkSlice& streamChunkSlice,
-      const RpcRequest& request,
-      Timeout timeout);
 
   void fetchChunkAsync(
       const StreamChunkSlice& streamChunkSlice,
