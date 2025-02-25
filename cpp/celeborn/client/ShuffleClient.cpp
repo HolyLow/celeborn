@@ -84,7 +84,7 @@ void ShuffleClientImpl::updateReducerFileGroup(int shuffleId) {
     }
     case SHUFFLE_NOT_REGISTERED: {
       // We cannot treat this as a failure. It indicates this is an empty
-      // shuffle... Stupid design, indeed.
+      // shuffle.
       LOG(WARNING) << "shuffleId " << shuffleId
                    << " is not registered when get reducerFileGroupInfo";
       std::lock_guard<std::mutex> lock(mutex_);

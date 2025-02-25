@@ -35,10 +35,10 @@ namespace celeborn {
  * and deserializes folly::IOBuf into Message when read().
  */
 class MessageSerializeHandler : public wangle::Handler<
-                                   std::unique_ptr<folly::IOBuf>,
-                                   std::unique_ptr<Message>,
-                                   std::unique_ptr<Message>,
-                                   std::unique_ptr<folly::IOBuf>> {
+                                    std::unique_ptr<folly::IOBuf>,
+                                    std::unique_ptr<Message>,
+                                    std::unique_ptr<Message>,
+                                    std::unique_ptr<folly::IOBuf>> {
  public:
   void read(Context* ctx, std::unique_ptr<folly::IOBuf> msg) override;
 
@@ -65,11 +65,15 @@ class TransportClient {
       std::unique_ptr<MessageDispatcher> dispatcher,
       Timeout defaultTimeout);
 
+  virtual ~TransportClient() = default;
+
   RpcResponse sendRpcRequestSync(const RpcRequest& request) {
     return sendRpcRequestSync(request, defaultTimeout_);
   }
 
-  RpcResponse sendRpcRequestSync(const RpcRequest& request, Timeout timeout);
+  virtual RpcResponse sendRpcRequestSync(
+      const RpcRequest& request,
+      Timeout timeout);
 
   // Ignore the response, return immediately.
   void sendRpcRequestWithoutResponse(const RpcRequest& request);
@@ -84,8 +88,6 @@ class TransportClient {
     return dispatcher_->isAvailable();
   }
 
-  ~TransportClient() = default;
-
  private:
   std::unique_ptr<wangle::ClientBootstrap<SerializePipeline>> client_;
   std::unique_ptr<MessageDispatcher> dispatcher_;
@@ -94,7 +96,7 @@ class TransportClient {
 
 class MessagePipelineFactory
     : public wangle::PipelineFactory<SerializePipeline> {
-public:
+ public:
   SerializePipeline::Ptr newPipeline(
       std::shared_ptr<folly::AsyncTransport> sock) override;
 };

@@ -21,18 +21,22 @@
 #include "celeborn/protocol/ControlMessages.h"
 
 namespace celeborn {
-/// RpcEndpointRef is typically used to communicate with LifecycleManager. It
-/// wraps around the TransportClient, add ip and name info to the message as the
-/// LifecycleManager requires the information.
+/**
+ * RpcEndpointRef is typically used to communicate with LifecycleManager. It
+ * wraps around the TransportClient, add ip and name info to the message as
+ * the LifecycleManager requires the information.
+ */
 class NettyRpcEndpointRef {
  public:
+  static constexpr uint8_t kNativeTransportMessageFlag = 0xFF;
+
   NettyRpcEndpointRef(
       const std::string& name,
       const std::string& srcHost,
       int srcPort,
       const std::string& dstHost,
       int dstPort,
-      const std::shared_ptr<TransportClient>& client);
+      std::shared_ptr<TransportClient> client);
 
   // TODO: refactor to template function when needed.
   std::unique_ptr<GetReducerFileGroupResponse> askSync(
@@ -51,7 +55,5 @@ class NettyRpcEndpointRef {
   std::string dstHost_;
   int dstPort_;
   std::shared_ptr<TransportClient> client_;
-
-  static constexpr uint8_t kIsTransportMessageFlag = 0xFF;
 };
 } // namespace celeborn
