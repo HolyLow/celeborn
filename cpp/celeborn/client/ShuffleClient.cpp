@@ -79,6 +79,11 @@ void ShuffleClientImpl::updateReducerFileGroup(int shuffleId) {
     case SUCCESS: {
       VLOG(1) << "success to get reducerFileGroupInfo, shuffleId " << shuffleId;
       std::lock_guard<std::mutex> lock(mutex_);
+      if (reducerFileGroupInfos_.count(shuffleId) > 0) {
+        VLOG(1) << "reducerFileGroupInfo for shuffleId" << shuffleId
+                << " already exists, ignored";
+        return;
+      }
       reducerFileGroupInfos_[shuffleId] = std::move(reducerFileGroupInfo);
       return;
     }
@@ -88,6 +93,11 @@ void ShuffleClientImpl::updateReducerFileGroup(int shuffleId) {
       LOG(WARNING) << "shuffleId " << shuffleId
                    << " is not registered when get reducerFileGroupInfo";
       std::lock_guard<std::mutex> lock(mutex_);
+      if (reducerFileGroupInfos_.count(shuffleId) > 0) {
+        VLOG(1) << "reducerFileGroupInfo for shuffleId" << shuffleId
+                << " already exists, ignored";
+        return;
+      }
       reducerFileGroupInfos_[shuffleId] = std::move(reducerFileGroupInfo);
       return;
     }

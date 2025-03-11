@@ -167,8 +167,7 @@ size_t StreamChunkSlice::Hasher::operator()(const StreamChunkSlice& lhs) const {
 TransportMessage ChunkFetchRequest::toTransportMessage() const {
   MessageType type = CHUNK_FETCH_REQUEST;
   PbChunkFetchRequest pb;
-  pb.unsafe_arena_set_allocated_streamchunkslice(
-      streamChunkSlice.toProto().release());
+  pb.set_allocated_streamchunkslice(streamChunkSlice.toProto().release());
   std::string payload = pb.SerializeAsString();
   return TransportMessage(type, std::move(payload));
 }

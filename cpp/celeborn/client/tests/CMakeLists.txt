@@ -12,29 +12,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-add_library(
-        client
-        reader/CelebornInputStream.cpp
-        ShuffleClient.cpp
-        reader/WorkerPartitionReader.cpp)
+
+add_executable(
+        celeborn_client_test
+        WorkerPartitionReaderTest.cpp)
+
+add_test(NAME celeborn_client_test COMMAND celeborn_client_test)
 
 target_include_directories(client PUBLIC ${CMAKE_BINARY_DIR})
 
 target_link_libraries(
-        client
-        network
-        proto
+        celeborn_client_test
+        PRIVATE
         memory
+        conf
+        proto
         protocol
         utils
+        network
+        client
         ${WANGLE}
         ${FIZZ}
         ${LIBSODIUM_LIBRARY}
         ${FOLLY_WITH_DEPENDENCIES}
         ${GLOG}
         ${GFLAGS_LIBRARIES}
-)
-
-if(CELEBORN_BUILD_TESTS)
-    add_subdirectory(tests)
-endif()
+        GTest::gtest
+        GTest::gmock
+        GTest::gtest_main)

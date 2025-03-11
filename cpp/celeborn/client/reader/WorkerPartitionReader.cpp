@@ -25,7 +25,7 @@ std::shared_ptr<WorkerPartitionReader> WorkerPartitionReader::create(
     const PartitionLocation& location,
     int32_t startMapIndex,
     int32_t endMapIndex,
-    TransportClientFactory& clientFactory) {
+    TransportClientFactory* clientFactory) {
   return std::shared_ptr<WorkerPartitionReader>(new WorkerPartitionReader(
       conf, shuffleKey, location, startMapIndex, endMapIndex, clientFactory));
 }
@@ -36,7 +36,7 @@ WorkerPartitionReader::WorkerPartitionReader(
     const PartitionLocation& location,
     int32_t startMapIndex,
     int32_t endMapIndex,
-    TransportClientFactory& clientFactory)
+    TransportClientFactory* clientFactory)
     : shuffleKey_(shuffleKey),
       location_(location),
       startMapIndex_(startMapIndex),
@@ -45,7 +45,8 @@ WorkerPartitionReader::WorkerPartitionReader(
       toConsumeChunkId_(0),
       maxFetchChunksInFlight_(conf->clientFetchMaxReqsInFlight()),
       fetchTimeout_(conf->clientFetchTimeout()) {
-  client_ = clientFactory.createClient(location_.host, location.fetchPort);
+  CELEBORN_CHECK_NOT_NULL(clientFactory);
+  client_ = clientFactory->createClient(location_.host, location_.fetchPort);
 
   OpenStream openStream(
       shuffleKey, location_.filename(), startMapIndex_, endMapIndex_);
@@ -79,17 +80,10 @@ std::unique_ptr<ReadOnlyByteBuffer> WorkerPartitionReader::next() {
   initAndCheck();
   fetchChunks();
   auto result = std::unique_ptr<ReadOnlyByteBuffer>();
-  // TODO: the try iter here is not aligned with java version.
-  for (int iter = 0; iter < kDefaultMaxTryConsume && result == nullptr;
-       iter++) {
+  while (!result) {
     initAndCheck();
     // TODO: add metric or time tracing
     chunkQueue_.try_dequeue_for(result, kDefaultConsumeIter);
-  }
-  if (!result) {
-    CELEBORN_FAIL(
-        "chunk dequeue failed after " + std::to_string(kDefaultMaxTryConsume) +
-        " iters");
   }
   toConsumeChunkId_++;
   return std::move(result);

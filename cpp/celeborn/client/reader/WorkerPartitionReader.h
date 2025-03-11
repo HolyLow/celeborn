@@ -42,15 +42,13 @@ class WorkerPartitionReader
       const PartitionLocation& location,
       int32_t startMapIndex,
       int32_t endMapIndex,
-      TransportClientFactory& clientFactory);
+      TransportClientFactory* clientFactory);
 
   ~WorkerPartitionReader() override;
 
   bool hasNext() override;
 
   std::unique_ptr<ReadOnlyByteBuffer> next() override;
-
-  void fetchChunks();
 
  private:
   // Disable creating the object directly to make sure that
@@ -61,7 +59,9 @@ class WorkerPartitionReader
       const PartitionLocation& location,
       int32_t startMapIndex,
       int32_t endMapIndex,
-      TransportClientFactory& clientFactory);
+      TransportClientFactory* clientFactory);
+
+  void fetchChunks();
 
   // This function cannot be called within constructor!
   void initAndCheck();
@@ -84,8 +84,6 @@ class WorkerPartitionReader
   folly::Synchronized<std::unique_ptr<std::exception>> exception_;
 
   static constexpr auto kDefaultConsumeIter = std::chrono::milliseconds(500);
-  // TODO: the maxTry count might not be proper.
-  static constexpr int kDefaultMaxTryConsume = 100;
 
   // TODO: add other params, such as fetchChunkRetryCnt, fetchChunkMaxRetry
 };

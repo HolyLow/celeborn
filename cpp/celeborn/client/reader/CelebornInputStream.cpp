@@ -176,7 +176,7 @@ std::shared_ptr<PartitionReader> CelebornInputStream::createReader(
           location,
           startMapIndex_,
           endMapIndex_,
-          *clientFactory_);
+          clientFactory_.get());
     }
     case StorageInfo::HDFS:
     default:

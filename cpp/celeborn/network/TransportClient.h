@@ -76,9 +76,9 @@ class TransportClient {
       Timeout timeout);
 
   // Ignore the response, return immediately.
-  void sendRpcRequestWithoutResponse(const RpcRequest& request);
+  virtual void sendRpcRequestWithoutResponse(const RpcRequest& request);
 
-  void fetchChunkAsync(
+  virtual void fetchChunkAsync(
       const StreamChunkSlice& streamChunkSlice,
       const RpcRequest& request,
       FetchChunkSuccessCallback onSuccess,
@@ -105,7 +105,9 @@ class TransportClientFactory {
  public:
   TransportClientFactory(const std::shared_ptr<CelebornConf>& conf);
 
-  std::shared_ptr<TransportClient> createClient(
+  virtual ~TransportClientFactory() = default;
+
+  virtual std::shared_ptr<TransportClient> createClient(
       const std::string& host,
       uint16_t port);
 
