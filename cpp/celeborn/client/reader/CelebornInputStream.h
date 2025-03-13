@@ -73,6 +73,5 @@ class CelebornInputStream {
   size_t currBatchSize_;
   std::shared_ptr<PartitionReader> currReader_;
   std::vector<std::unique_ptr<std::unordered_set<int>>> batchRecords_;
-  std::vector<std::shared_ptr<PartitionReader>> readers_;
 };
 } // namespace celeborn

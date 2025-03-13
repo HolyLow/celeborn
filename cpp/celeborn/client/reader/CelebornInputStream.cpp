@@ -207,9 +207,7 @@ std::unordered_set<int>& CelebornInputStream::getBatchRecord(int mapId) {
 }
 
 void CelebornInputStream::cleanupReader() {
-  if (currReader_) {
-    readers_.emplace_back(std::move(currReader_));
-  }
+  currReader_ = nullptr;
 }
 
 } // namespace celeborn
