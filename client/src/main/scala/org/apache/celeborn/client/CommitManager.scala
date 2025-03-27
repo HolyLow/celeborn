@@ -276,7 +276,10 @@ class CommitManager(appUniqueId: String, val conf: CelebornConf, lifecycleManage
     getCommitHandler(shuffleId).waitStageEnd(shuffleId)
   }
 
-  def handleGetReducerFileGroup(context: RpcCallContext, shuffleId: Int, languageType: LanguageType): Unit = {
+  def handleGetReducerFileGroup(
+      context: RpcCallContext,
+      shuffleId: Int,
+      languageType: LanguageType): Unit = {
     getCommitHandler(shuffleId).handleGetReducerFileGroup(context, shuffleId, languageType)
   }
 

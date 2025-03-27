@@ -19,8 +19,11 @@ package org.apache.celeborn.common.protocol.message
 
 import java.util
 import java.util.{Collections, UUID}
+
 import scala.collection.JavaConverters._
+
 import org.roaringbitmap.RoaringBitmap
+
 import org.apache.celeborn.common.identity.UserIdentifier
 import org.apache.celeborn.common.internal.Logging
 import org.apache.celeborn.common.meta.{DiskInfo, WorkerInfo, WorkerStatus}
@@ -275,7 +278,10 @@ object ControlMessages extends Logging {
 
   case class MapperEndResponse(status: StatusCode) extends MasterMessage
 
-  case class GetReducerFileGroup(shuffleId: Int, isSegmentGranularityVisible: Boolean, languageType: LanguageType)
+  case class GetReducerFileGroup(
+      shuffleId: Int,
+      isSegmentGranularityVisible: Boolean,
+      languageType: LanguageType)
     extends MasterMessage
 
   // util.Set[String] -> util.Set[Path.toString]
@@ -750,7 +756,13 @@ object ControlMessages extends Logging {
         .build().toByteArray
       new TransportMessage(MessageType.GET_REDUCER_FILE_GROUP, payload, languageType)
 
-    case GetReducerFileGroupResponse(status, fileGroup, attempts, partitionIds, failedBatches, languageType) =>
+    case GetReducerFileGroupResponse(
+          status,
+          fileGroup,
+          attempts,
+          partitionIds,
+          failedBatches,
+          languageType) =>
       val builder = PbGetReducerFileGroupResponse
         .newBuilder()
         .setStatus(status.getValue)

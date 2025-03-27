@@ -34,7 +34,7 @@ import org.apache.celeborn.common.CelebornConf
 import org.apache.celeborn.common.internal.Logging
 import org.apache.celeborn.common.network.TransportContext
 import org.apache.celeborn.common.network.client._
-import org.apache.celeborn.common.network.protocol.{LanguageType, RpcRequest, TransportMessage, RequestMessage => NRequestMessage}
+import org.apache.celeborn.common.network.protocol.{LanguageType, RequestMessage => NRequestMessage, RpcRequest, TransportMessage}
 import org.apache.celeborn.common.network.sasl.{SaslClientBootstrap, SaslServerBootstrap}
 import org.apache.celeborn.common.network.sasl.registration.{RegistrationClientBootstrap, RegistrationServerBootstrap}
 import org.apache.celeborn.common.network.server._
@@ -506,7 +506,7 @@ private[celeborn] class RequestMessage(
       out.writeUTF(receiver.name)
       val msg = Utils.toTransportMessage(content)
       msg match {
-        case transMsg : TransportMessage =>
+        case transMsg: TransportMessage =>
           // Check if the msg is a TransportMessage with CPP languageType.
           // If so, write the marker and the body explicitly.
           if (transMsg.getLanguageType == LanguageType.CPP) {

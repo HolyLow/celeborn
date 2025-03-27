@@ -433,7 +433,10 @@ class LifecycleManager(val appUniqueId: String, val conf: CelebornConf) extends 
           throw new UnsupportedOperationException(s"Not support $partitionType yet")
       }
 
-    case GetReducerFileGroup(shuffleId: Int, isSegmentGranularityVisible: Boolean, languageType: LanguageType) =>
+    case GetReducerFileGroup(
+          shuffleId: Int,
+          isSegmentGranularityVisible: Boolean,
+          languageType: LanguageType) =>
       logDebug(
         s"Received GetShuffleFileGroup request for shuffleId $shuffleId, isSegmentGranularityVisible $isSegmentGranularityVisible")
       handleGetReducerFileGroup(context, shuffleId, isSegmentGranularityVisible, languageType)

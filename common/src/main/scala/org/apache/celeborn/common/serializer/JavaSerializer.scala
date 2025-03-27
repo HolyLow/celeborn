@@ -19,7 +19,9 @@ package org.apache.celeborn.common.serializer
 
 import java.io._
 import java.nio.ByteBuffer
+
 import scala.reflect.ClassTag
+
 import org.apache.celeborn.common.CelebornConf
 import org.apache.celeborn.common.network.protocol.{LanguageType, TransportMessage}
 import org.apache.celeborn.common.util.{ByteBufferInputStream, ByteBufferOutputStream, Utils}
@@ -99,7 +101,7 @@ private[celeborn] class JavaSerializerInstance(
     val bos = new ByteBufferOutputStream()
     val msg = Utils.toTransportMessage(t)
     msg match {
-      case transMsg : TransportMessage =>
+      case transMsg: TransportMessage =>
         // Check if the msg is a TransportMessage with CPP languageType.
         // If so, write the marker and the body explicitly.
         if (transMsg.getLanguageType == LanguageType.CPP) {
@@ -124,7 +126,8 @@ private[celeborn] class JavaSerializerInstance(
     // If the languageMarker byte is CPP, deserialize directly.
     if (languageMarker == LanguageType.CPP.getMarker) {
       bytes.get
-      return Utils.fromTransportMessage(TransportMessage.fromByteBuffer(bytes, LanguageType.CPP)).asInstanceOf[T]
+      return Utils.fromTransportMessage(
+        TransportMessage.fromByteBuffer(bytes, LanguageType.CPP)).asInstanceOf[T]
     }
     val bis = new ByteBufferInputStream(bytes)
     val in = deserializeStream(bis)
@@ -138,7 +141,8 @@ private[celeborn] class JavaSerializerInstance(
     // If the languageMarker byte is CPP, deserialize directly.
     if (languageMarker == LanguageType.CPP.getMarker) {
       bytes.get
-      return Utils.fromTransportMessage(TransportMessage.fromByteBuffer(bytes, LanguageType.CPP)).asInstanceOf[T]
+      return Utils.fromTransportMessage(
+        TransportMessage.fromByteBuffer(bytes, LanguageType.CPP)).asInstanceOf[T]
     }
     val bis = new ByteBufferInputStream(bytes)
     val in = deserializeStream(bis, loader)

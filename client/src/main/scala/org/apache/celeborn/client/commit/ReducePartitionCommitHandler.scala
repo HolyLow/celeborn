@@ -65,8 +65,7 @@ class ReducePartitionCommitHandler(
     sharedRpcPool)
   with Logging {
 
-  class Record(val ctx: RpcCallContext, val languageType: LanguageType) {
-  }
+  class Record(val ctx: RpcCallContext, val languageType: LanguageType) {}
 
   private val getReducerFileGroupRequest =
     JavaUtils.newConcurrentHashMap[Int, util.Set[Record]]()
@@ -317,7 +316,10 @@ class ReducePartitionCommitHandler(
     replyGetReducerFileGroup(record.ctx, shuffleId, record.languageType)
   }
 
-  private def replyGetReducerFileGroup(context: RpcCallContext, shuffleId: Int, languageType: LanguageType): Unit = {
+  private def replyGetReducerFileGroup(
+      context: RpcCallContext,
+      shuffleId: Int,
+      languageType: LanguageType): Unit = {
     if (isStageDataLost(shuffleId)) {
       context.reply(
         GetReducerFileGroupResponse(
@@ -355,7 +357,10 @@ class ReducePartitionCommitHandler(
     }
   }
 
-  override def handleGetReducerFileGroup(context: RpcCallContext, shuffleId: Int, languageType: LanguageType): Unit = {
+  override def handleGetReducerFileGroup(
+      context: RpcCallContext,
+      shuffleId: Int,
+      languageType: LanguageType): Unit = {
     // Quick return for ended stage, avoid occupy sync lock.
     if (isStageEnd(shuffleId)) {
       replyGetReducerFileGroup(context, shuffleId, languageType)

@@ -19,17 +19,17 @@ package org.apache.celeborn.common.network.protocol;
 
 // todo: add some annotation...
 public enum LanguageType {
-    // todo: the marker for java should be verified again...
-    JAVA((byte) 0xAC),
-    CPP((byte) 0xFF);
+  // todo: the marker for java should be verified again...
+  JAVA((byte) 0xAC),
+  CPP((byte) 0xFF);
 
-    private final byte marker;
+  private final byte marker;
 
-    LanguageType(byte marker) {
-        this.marker = marker;
-    }
+  LanguageType(byte marker) {
+    this.marker = marker;
+  }
 
-    public byte getMarker() {
-        return marker;
-    }
+  public byte getMarker() {
+    return marker;
+  }
 }

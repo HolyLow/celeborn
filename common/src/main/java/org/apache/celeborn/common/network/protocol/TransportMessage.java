@@ -145,7 +145,8 @@ public class TransportMessage implements Serializable {
     return fromByteBuffer(buffer, LanguageType.JAVA);
   }
 
-  public static TransportMessage fromByteBuffer(ByteBuffer buffer, LanguageType languageType) throws CelebornIOException {
+  public static TransportMessage fromByteBuffer(ByteBuffer buffer, LanguageType languageType)
+      throws CelebornIOException {
     int messageTypeValue = buffer.getInt();
     if (MessageType.forNumber(messageTypeValue) == null) {
       throw new CelebornIOException("Decode failed, fallback to legacy messages.");
