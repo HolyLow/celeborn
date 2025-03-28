@@ -17,9 +17,13 @@
 
 package org.apache.celeborn.common.network.protocol;
 
-// todo: add some annotation...
+/**
+  * LanguageType represents which language the message is deserialized from / will be serialized into.
+  * For JAVA, the leading byte would be 0xAC according to Java's serialization stack.
+  * For CPP, the leading byte would be 0xFF as defined in CelebornCpp module.
+  * In this way, messages from/for different language could be distinguished and deser/ser accordingly.
+  */
 public enum LanguageType {
-  // todo: the marker for java should be verified again...
   JAVA((byte) 0xAC),
   CPP((byte) 0xFF);
 
