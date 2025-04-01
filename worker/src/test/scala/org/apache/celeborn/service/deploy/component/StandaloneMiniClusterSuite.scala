@@ -15,6 +15,13 @@ object StandaloneMiniClusterSuite {
   }
 }
 
+// accept:
+//  - the outputFile of the masterPort
+//  - a timeout and a termination fileName
+// do:
+//  - start the minicluster
+//  - output the masterPort to file
+//  - loop until timeout, or until the termination file is created
 class StandaloneMiniClusterSuite(val masterPortOutputFile: String) extends Logging with MiniClusterFeature {
   var masterPort = 0
 
