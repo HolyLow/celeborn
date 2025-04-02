@@ -3,6 +3,9 @@ package org.apache.celeborn.service.deploy.component
 import org.apache.celeborn.common.internal.Logging
 import org.apache.celeborn.service.deploy.MiniClusterFeature
 
+// use a skipped unit test
+// the cppClient's location is found by the relative path to java's root path
+
 object StandaloneMiniClusterSuite {
 
   def main(args: Array[String]): Unit = {
