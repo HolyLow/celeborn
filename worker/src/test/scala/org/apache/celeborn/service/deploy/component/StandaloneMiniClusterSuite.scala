@@ -25,7 +25,8 @@ object StandaloneMiniClusterSuite {
 //  - start the minicluster
 //  - output the masterPort to file
 //  - loop until timeout, or until the termination file is created
-class StandaloneMiniClusterSuite(val masterPortOutputFile: String) extends Logging with MiniClusterFeature {
+class StandaloneMiniClusterSuite(val masterPortOutputFile: String) extends Logging
+  with MiniClusterFeature {
   var masterPort = 0
 
   def init(): Unit = {
@@ -38,7 +39,5 @@ class StandaloneMiniClusterSuite(val masterPortOutputFile: String) extends Loggi
     logInfo("all test complete, stop Celeborn mini cluster")
     shutdownMiniCluster()
   }
-
-
 
 }
