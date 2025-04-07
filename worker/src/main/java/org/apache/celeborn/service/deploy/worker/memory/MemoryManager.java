@@ -41,7 +41,6 @@ import org.apache.celeborn.common.network.util.NettyUtils;
 import org.apache.celeborn.common.protocol.TransportModuleConstants;
 import org.apache.celeborn.common.util.ThreadUtils;
 import org.apache.celeborn.common.util.Utils;
-import org.apache.celeborn.reflect.DynMethods;
 import org.apache.celeborn.service.deploy.worker.storage.CreditStreamManager;
 import org.apache.celeborn.service.deploy.worker.storage.PartitionDataWriter;
 import org.apache.celeborn.service.deploy.worker.storage.StorageManager;
@@ -144,12 +143,12 @@ public class MemoryManager {
     boolean aggressiveEvictModeEnabled = conf.workerMemoryFileStorageEictAggressiveModeEnabled();
     double evictRatio = conf.workerMemoryFileStorageEvictRatio();
     forceAppendPauseSpentTimeThreshold = conf.metricsWorkerForceAppendPauseSpentTimeThreshold();
-    maxDirectMemory =
-        DynMethods.builder("maxDirectMemory")
-            .impl("jdk.internal.misc.VM") // for Java 10 and above
-            .impl("sun.misc.VM") // for Java 9 and previous
-            .buildStatic()
-            .<Long>invoke();
+    maxDirectMemory = 1024 * 1024 * 1024;
+    //        DynMethods.builder("maxDirectMemory")
+    //            .impl("jdk.internal.misc.VM") // for Java 10 and above
+    //            .impl("sun.misc.VM") // for Java 9 and previous
+    //            .buildStatic()
+    //            .<Long>invoke();
 
     Preconditions.checkArgument(maxDirectMemory > 0);
     Preconditions.checkArgument(

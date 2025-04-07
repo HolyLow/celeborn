@@ -17,10 +17,13 @@
 
 package org.apache.celeborn.service.deploy.cluster
 
+import java.io.File
 import java.util
 
+import scala.io.Source
 import scala.util.Random
 
+import org.junit.Assert
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
 
@@ -29,6 +32,7 @@ import org.apache.celeborn.common.CelebornConf
 import org.apache.celeborn.common.identity.UserIdentifier
 import org.apache.celeborn.common.internal.Logging
 import org.apache.celeborn.common.protocol.CompressionCodec
+import org.apache.celeborn.common.util.Utils.runCommand
 import org.apache.celeborn.service.deploy.MiniClusterFeature
 
 trait JavaReadCppWriteTestBase extends AnyFunSuite
@@ -47,7 +51,7 @@ trait JavaReadCppWriteTestBase extends AnyFunSuite
     shutdownMiniCluster()
   }
 
-  def testJavaReadCppWrite(): Unit = {
+  def testJavaReadCppWrite(codec: CompressionCodec): Unit = {
     val appUniqueId = "test-app"
     val shuffleId = 0
     val attemptId = 0
@@ -55,7 +59,7 @@ trait JavaReadCppWriteTestBase extends AnyFunSuite
     // Create lifecycleManager.
     val clientConf = new CelebornConf()
       .set(CelebornConf.MASTER_ENDPOINTS.key, s"localhost:$masterPort")
-      .set(CelebornConf.SHUFFLE_COMPRESSION_CODEC.key, CompressionCodec.NONE.name)
+      .set(CelebornConf.SHUFFLE_COMPRESSION_CODEC.key, codec.name)
       .set(CelebornConf.CLIENT_PUSH_REPLICATE_ENABLED.key, "true")
       .set(CelebornConf.CLIENT_PUSH_BUFFER_MAX_SIZE.key, "256K")
       .set(CelebornConf.READ_LOCAL_SHUFFLE_FILE, false)
@@ -74,11 +78,12 @@ trait JavaReadCppWriteTestBase extends AnyFunSuite
     val numData = 1000
     var sums = new util.ArrayList[Long](numPartitions)
     val rand = new Random()
-    for (mapId <- 0 to numMappers) {
-      for (partitionId <- 0 to numPartitions) {
-        for (i <- 0 to numData) {
+    for (mapId <- 0 until numMappers) {
+      for (partitionId <- 0 until numPartitions) {
+        sums.add(0)
+        for (i <- 0 until numData) {
           val data = rand.nextInt(maxData)
-          sums.add(partitionId, data)
+          sums.set(partitionId, sums.get(partitionId) + data)
           val dataStr = "-" + data.toString
           shuffleClient.pushOrMergeData(
             shuffleId,
@@ -100,6 +105,24 @@ trait JavaReadCppWriteTestBase extends AnyFunSuite
 
     // Launch cpp reader to read data, calculate result and write to specific result file.
     val cppResultFile = "/tmp/celeborn-cpp-result.txt"
+    val lifecycleManagerHost = lifecycleManager.getHost
+    val lifecycleManagerPort = lifecycleManager.getPort
+    val projectDirectory = new File(new File(".").getAbsolutePath)
+    val cppBinRelativeDirectory = "cpp/build/celeborn/tests/"
+    val cppBinFileName = "cppDataSumWithReaderClient"
+    val cppBinFilePath = s"$projectDirectory/$cppBinRelativeDirectory/$cppBinFileName"
+    // Execution command: $exec lifecycleManagerHost lifecycleManagerPort appUniqueId shuffleId attemptId numPartitions cppResultFile
+    val command =
+      s"$cppBinFilePath $lifecycleManagerHost $lifecycleManagerPort $appUniqueId $shuffleId $attemptId $numPartitions $cppResultFile"
+    runCommand(command)
 
+    // Verify the sum result.
+    var lineCount = 0
+    for (line <- Source.fromFile(cppResultFile, "utf-8").getLines.toList) {
+      val data = line.toLong
+      Assert.assertEquals(data, sums.get(lineCount))
+      lineCount += 1
+    }
+    Assert.assertEquals(lineCount, numPartitions)
   }
 }
