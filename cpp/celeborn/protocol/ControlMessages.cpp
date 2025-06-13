@@ -20,6 +20,125 @@
 
 namespace celeborn {
 namespace protocol {
+TransportMessage RegisterShuffle::toTransportMessage() const {
+  MessageType type = REGISTER_SHUFFLE;
+  PbRegisterShuffle pb;
+  pb.set_shuffleid(shuffleId);
+  pb.set_nummappers(numMappers);
+  pb.set_numpartitions(numPartitions);
+  std::string payload = pb.SerializeAsString();
+  return TransportMessage(type, std::move(payload));
+}
+
+std::unique_ptr<RegisterShuffleResponse>
+RegisterShuffleResponse::fromTransportMessage(
+    const TransportMessage& transportMessage) {
+  CELEBORN_CHECK(
+      transportMessage.type() == REGISTER_SHUFFLE_RESPONSE,
+      "transportMessageType mismatch");
+  auto payload = transportMessage.payload();
+  auto pbRegisterShuffleResponse = utils::parseProto<PbRegisterShuffleResponse>(
+      reinterpret_cast<const uint8_t*>(payload.c_str()), payload.size());
+  auto response = std::make_unique<RegisterShuffleResponse>();
+  response->status = toStatusCode(pbRegisterShuffleResponse->status());
+  auto& pbPartitionLocations = pbRegisterShuffleResponse->partitionlocations();
+  for (auto& pbPartitionLocation : pbPartitionLocations) {
+    response->partitionLocations.push_back(
+        std::move(PartitionLocation::fromPb(pbPartitionLocation)));
+  }
+  return std::move(response);
+}
+
+TransportMessage MapperEnd::toTransportMessage() const {
+  MessageType type = MAPPER_END;
+  PbMapperEnd pb;
+  pb.set_shuffleid(shuffleId);
+  pb.set_mapid(mapId);
+  pb.set_attemptid(attemptId);
+  pb.set_nummappers(numMappers);
+  pb.set_partitionid(partitionId);
+  std::string payload = pb.SerializeAsString();
+  return TransportMessage(type, std::move(payload));
+}
+
+std::unique_ptr<MapperEndResponse> MapperEndResponse::fromTransportMessage(
+    const TransportMessage& transportMessage) {
+  CELEBORN_CHECK(
+      transportMessage.type() == MAPPER_END_RESPONSE,
+      "transportMessageType mismatch");
+  auto payload = transportMessage.payload();
+  auto pbMapperEndResponse = utils::parseProto<PbMapperEndResponse>(
+      reinterpret_cast<const uint8_t*>(payload.c_str()), payload.size());
+  auto response = std::make_unique<MapperEndResponse>();
+  response->status = toStatusCode(pbMapperEndResponse->status());
+  return std::move(response);
+}
+
+ReviveRequest::ReviveRequest(
+    long _shuffleId,
+    int _mapId,
+    int _attemptId,
+    int _partitionId,
+    int _epoch,
+    std::shared_ptr<const PartitionLocation> _loc,
+    StatusCode _cause)
+    : shuffleId(_shuffleId),
+      mapId(_mapId),
+      attemptId(_attemptId),
+      partitionId(_partitionId),
+      epoch(_epoch),
+      loc(std::move(_loc)),
+      cause(_cause) {}
+
+TransportMessage Revive::toTransportMessage() const {
+  MessageType type = CHANGE_LOCATION;
+  PbRevive pb;
+  pb.set_shuffleid(shuffleId);
+  for (auto mapId : mapIds) {
+    pb.add_mapid(mapId);
+  }
+  for (auto& reviveRequest : reviveRequests) {
+    auto pbRevivePartitionInfo = pb.add_partitioninfo();
+    pbRevivePartitionInfo->set_partitionid(reviveRequest->partitionId);
+    pbRevivePartitionInfo->set_epoch(reviveRequest->epoch);
+    pbRevivePartitionInfo->set_status(reviveRequest->cause);
+    if (reviveRequest->loc) {
+      pbRevivePartitionInfo->set_allocated_partition(
+          reviveRequest->loc->toProto().release());
+    }
+  }
+  std::string payload = pb.SerializeAsString();
+  return TransportMessage(type, std::move(payload));
+}
+
+std::unique_ptr<ChangeLocationResponse>
+ChangeLocationResponse::fromTransportMessage(
+    const TransportMessage& transportMessage) {
+  CELEBORN_CHECK(
+      transportMessage.type() == CHANGE_LOCATION_RESPONSE,
+      "transportMessageType mismatch");
+  auto payload = transportMessage.payload();
+  auto pbChangeLocationResponse = utils::parseProto<PbChangeLocationResponse>(
+      reinterpret_cast<const uint8_t*>(payload.c_str()), payload.size());
+  auto response = std::make_unique<ChangeLocationResponse>();
+  response->endedMapIds.reserve(pbChangeLocationResponse->endedmapid_size());
+  for (auto endedMapId : pbChangeLocationResponse->endedmapid()) {
+    response->endedMapIds.push_back(endedMapId);
+  }
+  int numPartitionInfo = pbChangeLocationResponse->partitioninfo_size();
+  response->partitionInfos.resize(numPartitionInfo);
+  for (int i = 0; i < numPartitionInfo; i++) {
+    auto& partitionInfo = response->partitionInfos[i];
+    auto& pbPartitionInfo = pbChangeLocationResponse->partitioninfo(i);
+    partitionInfo.partitionId = pbPartitionInfo.partitionid();
+    partitionInfo.status = toStatusCode(pbPartitionInfo.status());
+    partitionInfo.partition =
+        PartitionLocation::fromPb(pbPartitionInfo.partition());
+    partitionInfo.oldAvailable = pbPartitionInfo.oldavailable();
+  }
+  return std::move(response);
+}
+
 TransportMessage GetReducerFileGroup::toTransportMessage() const {
   MessageType type = GET_REDUCER_FILE_GROUP;
   PbGetReducerFileGroup pb;

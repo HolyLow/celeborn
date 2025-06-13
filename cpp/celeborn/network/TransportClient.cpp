@@ -114,6 +114,39 @@ void TransportClient::fetchChunkAsync(
   }
 }
 
+void TransportClient::pushDataAsync(
+    const PushData& pushData,
+    Timeout timeout,
+    std::shared_ptr<RpcResponseCallback> callback) {
+  try {
+    auto requestMsg = std::make_unique<PushData>(pushData);
+    auto future = dispatcher_->sendPushDataRequest(std::move(requestMsg));
+    std::move(future)
+        .within(timeout)
+        .thenValue(
+            [_callback = callback](std::unique_ptr<Message> responseMsg) {
+              if (responseMsg->type() == Message::RPC_RESPONSE) {
+                auto rpcResponse =
+                    reinterpret_cast<RpcResponse*>(responseMsg.get());
+                _callback->onSuccess(rpcResponse->body());
+              } else {
+                _callback->onFailure(
+                    std::make_unique<std::runtime_error>(
+                        "pushData return value type is not rpcResponse"));
+              }
+            })
+        .thenError([_callback = callback](const folly::exception_wrapper& e) {
+          _callback->onFailure(
+              std::make_unique<std::runtime_error>(e.what().toStdString()));
+        });
+
+  } catch (std::exception& e) {
+    auto errorMsg = fmt::format("pushData failed: {}", e.what());
+    LOG(ERROR) << errorMsg;
+    callback->onFailure(std::make_unique<std::runtime_error>(errorMsg));
+  }
+}
+
 SerializePipeline::Ptr MessagePipelineFactory::newPipeline(
     std::shared_ptr<folly::AsyncTransport> sock) {
   auto pipeline = SerializePipeline::create();
@@ -128,7 +161,7 @@ SerializePipeline::Ptr MessagePipelineFactory::newPipeline(
 }
 
 TransportClientFactory::TransportClientFactory(
-    const std::shared_ptr<conf::CelebornConf>& conf) {
+    const std::shared_ptr<const conf::CelebornConf>& conf) {
   numConnectionsPerPeer_ = conf->networkIoNumConnectionsPerPeer();
   rpcLookupTimeout_ = conf->rpcLookupTimeout();
   connectTimeout_ = conf->networkConnectTimeout();
@@ -143,6 +176,13 @@ TransportClientFactory::TransportClientFactory(
 std::shared_ptr<TransportClient> TransportClientFactory::createClient(
     const std::string& host,
     uint16_t port) {
+  return createClient(host, port, std::rand());
+}
+
+std::shared_ptr<TransportClient> TransportClientFactory::createClient(
+    const std::string& host,
+    uint16_t port,
+    int32_t partitionId) {
   auto address = folly::SocketAddress(host, port);
   auto pool = clientPools_.withLock([&](auto& registry) {
     auto iter = registry.find(address);
@@ -154,7 +194,7 @@ std::shared_ptr<TransportClient> TransportClientFactory::createClient(
     registry[address] = createdPool;
     return createdPool;
   });
-  auto clientId = std::rand() % numConnectionsPerPeer_;
+  auto clientId = partitionId % numConnectionsPerPeer_;
   {
     std::lock_guard<std::mutex> lock(pool->mutex);
     // TODO: auto-disconnect if the connection is idle for a long time?

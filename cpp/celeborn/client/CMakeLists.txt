@@ -16,6 +16,8 @@ add_library(
         client
         reader/WorkerPartitionReader.cpp
         reader/CelebornInputStream.cpp
+        writer/PushState.cpp
+        writer/PushStrategy.cpp
         ShuffleClient.cpp)
 
 target_include_directories(client PUBLIC ${CMAKE_BINARY_DIR})

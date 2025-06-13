@@ -31,6 +31,8 @@ struct StorageInfo {
 
   StorageInfo(const StorageInfo& other) = default;
 
+  std::unique_ptr<PbStorageInfo> toProto() const;
+
   enum Type {
     MEMORY = 0,
     HDD = 1,
@@ -88,14 +90,26 @@ struct PartitionLocation {
 
   PartitionLocation(const PartitionLocation& other);
 
+  std::unique_ptr<PbPartitionLocation> toProto() const;
+
   std::string filename() const {
     return std::to_string(id) + "-" + std::to_string(epoch) + "-" +
         std::to_string(mode);
   }
 
+  std::string uniqueId() const {
+    return std::to_string(id) + "-" + std::to_string(epoch);
+  }
+
+  std::string hostAndPushPort() const {
+    return host + ":" + std::to_string(pushPort);
+  }
+
  private:
   static std::unique_ptr<PartitionLocation> fromPbWithoutPeer(
       const PbPartitionLocation& pb);
+
+  std::unique_ptr<PbPartitionLocation> toProtoWithoutPeer() const;
 };
 } // namespace protocol
 } // namespace celeborn

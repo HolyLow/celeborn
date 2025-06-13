@@ -69,13 +69,14 @@ void readRpcAddress(
 
 TEST(NettyRpcEndpointRefTest, askSyncGetReducerFileGroup) {
   auto mockedClient = std::make_shared<MockTransportClient>();
+  auto conf = std::make_shared<conf::CelebornConf>();
   const std::string srcName = "test-name";
   const std::string srcHost = "test-src-host";
   const int srcPort = 100;
   const std::string dstHost = "test-dst-host";
   const int dstPort = 101;
   auto nettyRpcEndpointRef = NettyRpcEndpointRef(
-      srcName, srcHost, srcPort, dstHost, dstPort, mockedClient);
+      srcName, srcHost, srcPort, dstHost, dstPort, mockedClient, *conf);
 
   const std::string responseBody = "test-response-body";
 
@@ -96,7 +97,9 @@ TEST(NettyRpcEndpointRefTest, askSyncGetReducerFileGroup) {
   mockedClient->setResponse(*rpcResponse);
 
   protocol::GetReducerFileGroup request{1001};
-  auto response = nettyRpcEndpointRef.askSync(request, MS(100));
+  auto response = nettyRpcEndpointRef.askSync<
+      protocol::GetReducerFileGroup,
+      protocol::GetReducerFileGroupResponse>(request, MS(100));
   EXPECT_EQ(response->status, status);
 
   auto sentRequest = mockedClient->getRequest();

@@ -15,26 +15,18 @@
  * limitations under the License.
  */
 
-#include "celeborn/network/NettyRpcEndpointRef.h"
+#pragma once
+
+#include "celeborn/memory/ByteBuffer.h"
 
 namespace celeborn {
-namespace network {
+namespace protocol {
 
-NettyRpcEndpointRef::NettyRpcEndpointRef(
-    const std::string& name,
-    const std::string& srcHost,
-    int srcPort,
-    const std::string& dstHost,
-    int dstPort,
-    const std::shared_ptr<TransportClient>& client,
-    const conf::CelebornConf& conf)
-    : name_(name),
-      srcHost_(srcHost),
-      srcPort_(srcPort),
-      dstHost_(dstHost),
-      dstPort_(dstPort),
-      client_(client),
-      defaultTimeout_(conf.rpcAskTimeout()) {}
+int encodedLength(const std::string& msg);
 
-} // namespace network
+void encode(memory::WriteOnlyByteBuffer& buffer, const std::string& msg);
+
+std::string decode(memory::ReadOnlyByteBuffer& buffer);
+
+} // namespace protocol
 } // namespace celeborn

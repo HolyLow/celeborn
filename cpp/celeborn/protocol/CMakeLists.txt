@@ -15,6 +15,7 @@
 add_library(
         protocol
         STATIC
+        Encoders.cpp
         PartitionLocation.cpp
         TransportMessage.cpp
         ControlMessages.cpp)

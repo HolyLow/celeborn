@@ -151,6 +151,11 @@ folly::Future<std::unique_ptr<Message>> MessageDispatcher::operator()(
 }
 
 folly::Future<std::unique_ptr<Message>>
+MessageDispatcher::sendPushDataRequest(std::unique_ptr<Message> toSendMsg) {
+  return (*this)(std::move(toSendMsg));
+}
+
+folly::Future<std::unique_ptr<Message>>
 MessageDispatcher::sendFetchChunkRequest(
     const protocol::StreamChunkSlice& streamChunkSlice,
     std::unique_ptr<Message> toSendMsg) {

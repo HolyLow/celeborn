@@ -40,10 +40,10 @@ int main(int argc, char** argv) {
 
   // Create shuffleClient and setup.
   auto conf = std::make_shared<celeborn::conf::CelebornConf>();
-  auto clientFactory =
-      std::make_shared<celeborn::network::TransportClientFactory>(conf);
-  auto shuffleClient = std::make_unique<celeborn::client::ShuffleClientImpl>(
-      appUniqueId, conf, clientFactory);
+  auto clientEndpoint =
+      std::make_shared<celeborn::client::ShuffleClientEndpoint>(conf);
+  auto shuffleClient = celeborn::client::ShuffleClientImpl::create(
+      appUniqueId, conf, *clientEndpoint);
   shuffleClient->setupLifecycleManagerRef(
       lifecycleManagerHost, lifecycleManagerPort);
 

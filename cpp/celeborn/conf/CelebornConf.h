@@ -36,11 +36,61 @@ namespace conf {
 
 class CelebornConf : public BaseConf {
  public:
+  static constexpr std::string_view kRpcAskTimeout{"celeborn.rpc.askTimeout"};
+
   static const std::unordered_map<std::string, folly::Optional<std::string>>
       kDefaultProperties;
 
   static constexpr std::string_view kRpcLookupTimeout{
       "celeborn.rpc.lookupTimeout"};
+
+  static constexpr std::string_view kClientIoConnectionTimeout{
+    "celeborn.client.io.connectionTimeout"};
+
+  static constexpr std::string_view kClientRpcRegisterShuffleAskTimeout{
+    "celeborn.client.rpc.registerShuffle.askTimeout"};
+
+  static constexpr std::string_view kClientRegisterShuffleMaxRetries{
+    "celeborn.client.registerShuffle.maxRetries"};
+
+  static constexpr std::string_view kClientRegisterShuffleRetryWait{
+    "celeborn.client.registerShuffle.retryWait"};
+
+  static constexpr std::string_view kClientPushRetryThreads{
+    "celeborn.client.push.retry.threads"};
+
+  static constexpr std::string_view kClientPushTimeout{
+    "celeborn.client.push.timeout"};
+
+  static constexpr std::string_view kClientPushReviveInterval{
+    "celeborn.client.push.revive.interval"};
+
+  static constexpr std::string_view kClientPushReviveBatchSize{
+    "celeborn.client.push.revive.batchSize"};
+
+  static constexpr std::string_view kClientPushMaxReviveTimes{
+    "celeborn.client.push.revive.maxRetries"};
+
+  static constexpr std::string_view kClientPushLimitStrategy{
+    "celeborn.client.push.limit.strategy"};
+
+  static constexpr std::string_view kSimplePushStrategy{"SIMPLE"};
+
+  static constexpr std::string_view kClientPushMaxReqsInFlightPerWorker{
+    "celeborn.client.push.maxReqsInFlight.perWorker"};
+
+  static constexpr std::string_view kClientPushMaxReqsInFlightTotal{
+    "celeborn.client.push.maxReqsInFlight.total"};
+
+  static constexpr std::string_view kClientPushLimitInFlightTimeoutMs{
+    "celeborn.client.push.limit.inFlight.timeout"};
+
+  static constexpr std::string_view kClientPushLimitInFlightSleepDeltaMs{
+    "celeborn.client.push.limit.inFlight.sleepInterval"};
+
+  static constexpr std::string_view
+      kClientRpcRequestPartitionLocationAskTimeout{
+        "celeborn.client.rpc.requestPartition.askTimeout"};
 
   static constexpr std::string_view kClientRpcGetReducerFileGroupRpcAskTimeout{
       "celeborn.client.rpc.getReducerFileGroup.askTimeout"};
@@ -70,7 +120,39 @@ class CelebornConf : public BaseConf {
 
   void registerProperty(const std::string_view& key, const std::string& value);
 
+  Timeout rpcAskTimeout() const;
+
   Timeout rpcLookupTimeout() const;
+
+  Timeout clientIoConnectionTimeout() const;
+
+  Timeout clientRpcRegisterShuffleRpcAskTimeout() const;
+
+  int clientRegisterShuffleMaxRetries() const;
+
+  Timeout clientRegisterShuffleRetryWait() const;
+
+  int clientPushRetryThreads() const;
+
+  Timeout clientPushDataTimeout() const;
+
+  Timeout clientPushReviveInterval() const;
+
+  int clientPushReviveBatchSize() const;
+
+  int clientPushMaxReviveTimes() const;
+
+  std::string clientPushLimitStrategy() const;
+
+  int clientPushMaxReqsInFlightPerWorker() const;
+
+  int clientPushMaxReqsInFlightTotal() const;
+
+  long clientPushLimitInFlightTimeoutMs() const;
+
+  long clientPushLimitInFlightSleepDeltaMs() const;
+
+  Timeout clientRpcRequestPartitionLocationRpcAskTimeout() const;
 
   Timeout clientRpcGetReducerFileGroupRpcAskTimeout() const;
 

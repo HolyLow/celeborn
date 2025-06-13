@@ -171,6 +171,13 @@ class WriteOnlyByteBuffer : public ByteBuffer {
     appender_->push(reinterpret_cast<const uint8_t*>(ptr), data.size());
   }
 
+  void writeFromBuffer(
+      const uint8_t* data,
+      const size_t offset,
+      const size_t length) const {
+    appender_->push(data + offset, length);
+  }
+
   size_t size() const {
     return data_->computeChainDataLength();
   }

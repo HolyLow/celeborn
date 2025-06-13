@@ -54,6 +54,17 @@ using FetchChunkSuccessCallback = std::function<void(
 using FetchChunkFailureCallback = std::function<
     void(protocol::StreamChunkSlice, std::unique_ptr<std::exception>)>;
 
+class RpcResponseCallback {
+ public:
+  RpcResponseCallback() = default;
+
+  virtual ~RpcResponseCallback() = default;
+
+  virtual void onSuccess(std::unique_ptr<memory::ReadOnlyByteBuffer>) = 0;
+
+  virtual void onFailure(std::unique_ptr<std::exception> exception) = 0;
+};
+
 /**
  * TransportClient sends the messages to the network layer, and handles
  * the message callback, timeout, error handling, etc.
@@ -82,6 +93,11 @@ class TransportClient {
       FetchChunkSuccessCallback onSuccess,
       FetchChunkFailureCallback onFailure);
 
+  virtual void pushDataAsync(
+      const PushData& pushData,
+      Timeout timeout,
+      std::shared_ptr<RpcResponseCallback> callback);
+
   bool active() const {
     return dispatcher_->isAvailable();
   }
@@ -103,11 +119,14 @@ class MessagePipelineFactory
 
 class TransportClientFactory {
  public:
-  TransportClientFactory(const std::shared_ptr<conf::CelebornConf>& conf);
+  TransportClientFactory(const std::shared_ptr<const conf::CelebornConf>& conf);
 
   virtual std::shared_ptr<TransportClient> createClient(
       const std::string& host,
       uint16_t port);
+
+  virtual std::shared_ptr<TransportClient>
+  createClient(const std::string& host, uint16_t port, int32_t partitionId);
 
  private:
   struct ClientPool {

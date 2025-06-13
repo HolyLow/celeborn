@@ -26,6 +26,82 @@
 
 namespace celeborn {
 namespace protocol {
+struct RegisterShuffle {
+  long shuffleId;
+  int numMappers;
+  int numPartitions;
+
+  TransportMessage toTransportMessage() const;
+};
+
+struct RegisterShuffleResponse {
+  StatusCode status;
+  std::vector<std::unique_ptr<const PartitionLocation>> partitionLocations;
+
+  static std::unique_ptr<RegisterShuffleResponse> fromTransportMessage(
+      const TransportMessage& transportMessage);
+};
+
+struct MapperEnd {
+  long shuffleId;
+  int mapId;
+  int attemptId;
+  int numMappers;
+  int partitionId;
+
+  TransportMessage toTransportMessage() const;
+};
+
+struct MapperEndResponse {
+  StatusCode status;
+
+  static std::unique_ptr<MapperEndResponse> fromTransportMessage(
+      const TransportMessage& transportMessage);
+};
+
+struct ReviveRequest {
+  long shuffleId;
+  int mapId;
+  int attemptId;
+  int partitionId;
+  int epoch;
+  std::shared_ptr<const PartitionLocation> loc;
+  StatusCode cause;
+  std::atomic<int> reviveStatus{StatusCode::REVIVE_INITIALIZED};
+
+  ReviveRequest(
+      long _shuffleId,
+      int _mapId,
+      int _attemptId,
+      int _partitionId,
+      int _epoch,
+      std::shared_ptr<const PartitionLocation> _loc,
+      StatusCode _cause);
+};
+
+struct Revive {
+  long shuffleId;
+  std::unordered_set<int> mapIds;
+  std::unordered_set<std::shared_ptr<ReviveRequest>> reviveRequests;
+
+  TransportMessage toTransportMessage() const;
+};
+
+struct ChangeLocationPartitionInfo {
+  int partitionId;
+  StatusCode status;
+  std::shared_ptr<const PartitionLocation> partition;
+  bool oldAvailable;
+};
+
+struct ChangeLocationResponse {
+  std::vector<int> endedMapIds;
+  std::vector<ChangeLocationPartitionInfo> partitionInfos;
+
+  static std::unique_ptr<ChangeLocationResponse> fromTransportMessage(
+      const TransportMessage& transportMessage);
+};
+
 struct GetReducerFileGroup {
   int shuffleId;
 

@@ -15,26 +15,19 @@
  * limitations under the License.
  */
 
-#include "celeborn/network/NettyRpcEndpointRef.h"
+#include "celeborn/client/writer/PushStrategy.h"
 
 namespace celeborn {
-namespace network {
+namespace client {
 
-NettyRpcEndpointRef::NettyRpcEndpointRef(
-    const std::string& name,
-    const std::string& srcHost,
-    int srcPort,
-    const std::string& dstHost,
-    int dstPort,
-    const std::shared_ptr<TransportClient>& client,
-    const conf::CelebornConf& conf)
-    : name_(name),
-      srcHost_(srcHost),
-      srcPort_(srcPort),
-      dstHost_(dstHost),
-      dstPort_(dstPort),
-      client_(client),
-      defaultTimeout_(conf.rpcAskTimeout()) {}
+std::unique_ptr<PushStrategy> PushStrategy::create(const conf::CelebornConf& conf) {
+  auto strategyName = conf.clientPushLimitStrategy();
+  if (strategyName == conf::CelebornConf::kSimplePushStrategy) {
+    return std::make_unique<SimplePushStrategy>(conf);
+  } else {
+    CELEBORN_FAIL("unsupported pushStrategy: " + strategyName);
+  }
+}
 
-} // namespace network
+} // namespace client
 } // namespace celeborn

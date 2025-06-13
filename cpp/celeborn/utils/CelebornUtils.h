@@ -17,9 +17,12 @@
 
 #pragma once
 
+#include <folly/Synchronized.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <charconv>
 #include <chrono>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "celeborn/memory/ByteBuffer.h"
@@ -47,6 +50,10 @@ std::vector<T> toVector(const std::set<T>& in) {
 
 std::string makeShuffleKey(const std::string& appId, int shuffleId);
 
+std::string makeMapKey(int shuffleId, int mapId, int attemptId);
+
+void writeUTF(folly::io::Appender& appender, const std::string& msg);
+
 void writeUTF(memory::WriteOnlyByteBuffer& buffer, const std::string& msg);
 
 void writeRpcAddress(
@@ -56,8 +63,21 @@ void writeRpcAddress(
 
 using Duration = std::chrono::duration<double>;
 using Timeout = std::chrono::milliseconds;
+using MS = std::chrono::milliseconds;
 inline Timeout toTimeout(Duration duration) {
   return std::chrono::duration_cast<Timeout>(duration);
+}
+
+inline uint64_t currentTimeMillis() {
+  return std::chrono::duration_cast<std::chrono::milliseconds>(
+             std::chrono::system_clock::now().time_since_epoch())
+      .count();
+}
+
+inline uint64_t currentTimeNanos() {
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(
+             std::chrono::high_resolution_clock ::now().time_since_epoch())
+      .count();
 }
 
 /// parse string like "Any-Host-Str:Port#1:Port#2:...:Port#num", split into
@@ -112,6 +132,121 @@ std::unique_ptr<T> parseProto(const uint8_t* bytes, int len) {
   }
   return pbObj;
 }
+
+template <typename TKey, typename TValue, typename THasher = std::hash<TKey>>
+class ConcurrentHashMap {
+ public:
+  std::optional<TValue> get(const TKey& key) {
+    // Explicitly declaring the return type helps type deduction.
+    return synchronizedMap_.withLock([&](auto& map) -> std::optional<TValue> {
+      auto iter = map.find(key);
+      if (iter != map.end()) {
+        return iter->second;
+      }
+      return std::nullopt;
+    });
+  }
+
+  bool containsKey(const TKey& key) {
+    return synchronizedMap_.withLock([&](auto& map) {
+      auto iter = map.find(key);
+      if (iter != map.end()) {
+        return true;
+      }
+      return false;
+    });
+  }
+
+  TValue computeIfAbsent(const TKey& key, std::function<TValue()> compute) {
+    return synchronizedMap_.withLock([&](auto& map) {
+      auto iter = map.find(key);
+      if (iter != map.end()) {
+        return iter->second;
+      }
+      map[key] = compute();
+      return map[key];
+    });
+  }
+
+  void set(const TKey& key, TValue&& value) {
+    synchronizedMap_.withLock([&](auto& map) { map[key] = std::move(value); });
+  }
+
+  void set(const TKey& key, const TValue& value) {
+    synchronizedMap_.withLock([&](auto& map) { map[key] = value; });
+  }
+
+  size_t size() const {
+    return synchronizedMap_.lock()->size();
+  }
+
+  std::optional<TValue> erase(const TKey& key) {
+    // Explicitly declaring the return type helps type deduction.
+    return synchronizedMap_.withLock([&](auto& map) -> std::optional<TValue> {
+      auto iter = map.find(key);
+      if (iter != map.end()) {
+        auto result = std::move(iter->second);
+        map.erase(key);
+        return std::move(result);
+      }
+      return std::nullopt;
+    });
+  }
+
+  void clear() {
+    synchronizedMap_.lock()->clear();
+  }
+
+ private:
+  folly::Synchronized<std::unordered_map<TKey, TValue, THasher>, std::mutex>
+      synchronizedMap_;
+};
+
+template <typename TValue, typename THasher = std::hash<TValue>>
+class ConcurrentHashSet {
+ public:
+  // Return true if the value exists, false otherwise.
+  bool contains(const TValue& value) {
+    return synchronizedSet_.withLock(
+        [&](auto& set) { return set.find(value) != set.end(); });
+  }
+
+  // Return true if the value is inserted because it doesn't exist,
+  // false if the value is not inserted because it already exists.
+  bool insert(const TValue& value) {
+    return synchronizedSet_.withLock([&](auto& set) {
+      if (set.find(value) != set.end()) {
+        return false;
+      }
+      set.insert(value);
+      return true;
+    });
+  }
+
+  // Return true if the erasion happens because the value exists,
+  // false if the erasion doesn't happen because the value doesn't exist.
+  bool erase(const TValue& value) {
+    return synchronizedSet_.withLock([&](auto& set) {
+      if (set.find(value) != set.end()) {
+        set.erase(value);
+        return true;
+      }
+      return false;
+    });
+  }
+
+  size_t size() const {
+    return synchronizedSet_.lock()->size();
+  }
+
+  void clear() {
+    synchronizedSet_.lock()->clear();
+  }
+
+ private:
+  folly::Synchronized<std::unordered_set<TValue, THasher>, std::mutex>
+      synchronizedSet_;
+};
 
 } // namespace utils
 } // namespace celeborn
