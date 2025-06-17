@@ -143,12 +143,13 @@ public class MemoryManager {
     boolean aggressiveEvictModeEnabled = conf.workerMemoryFileStorageEictAggressiveModeEnabled();
     double evictRatio = conf.workerMemoryFileStorageEvictRatio();
     forceAppendPauseSpentTimeThreshold = conf.metricsWorkerForceAppendPauseSpentTimeThreshold();
-    maxDirectMemory =
-        DynMethods.builder("maxDirectMemory")
-            .impl("jdk.internal.misc.VM") // for Java 10 and above
-            .impl("sun.misc.VM") // for Java 9 and previous
-            .buildStatic()
-            .<Long>invoke();
+//    maxDirectMemory =
+//        DynMethods.builder("maxDirectMemory")
+//            .impl("jdk.internal.misc.VM") // for Java 10 and above
+//            .impl("sun.misc.VM") // for Java 9 and previous
+//            .buildStatic()
+//            .<Long>invoke();
+    maxDirectMemory = 1024 * 1024 * 1024 * 2;
 
     Preconditions.checkArgument(maxDirectMemory > 0);
     Preconditions.checkArgument(
