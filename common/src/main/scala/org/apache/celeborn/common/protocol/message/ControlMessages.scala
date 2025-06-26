@@ -274,10 +274,11 @@ object ControlMessages extends Logging {
       attemptId: Int,
       numMappers: Int,
       partitionId: Int,
-      failedBatchSet: util.Map[String, util.Set[PushFailedBatch]])
+      failedBatchSet: util.Map[String, util.Set[PushFailedBatch]],
+      serdeVersion: SerdeVersion)
     extends MasterMessage
 
-  case class MapperEndResponse(status: StatusCode) extends MasterMessage
+  case class MapperEndResponse(status: StatusCode, serdeVersion: SerdeVersion) extends MasterMessage
 
   case class GetReducerFileGroup(
       shuffleId: Int,
@@ -744,7 +745,14 @@ object ControlMessages extends Logging {
     case pb: PbChangeLocationResponse =>
       new TransportMessage(MessageType.CHANGE_LOCATION_RESPONSE, pb.toByteArray)
 
-    case MapperEnd(shuffleId, mapId, attemptId, numMappers, partitionId, pushFailedBatch) =>
+    case MapperEnd(
+          shuffleId,
+          mapId,
+          attemptId,
+          numMappers,
+          partitionId,
+          pushFailedBatch,
+          serdeVersion) =>
       val pushFailedMap = pushFailedBatch.asScala.map { case (k, v) =>
         val resultValue = PbSerDeUtils.toPbPushFailedBatchSet(v)
         (k, resultValue)
@@ -757,13 +765,13 @@ object ControlMessages extends Logging {
         .setPartitionId(partitionId)
         .putAllPushFailureBatches(pushFailedMap)
         .build().toByteArray
-      new TransportMessage(MessageType.MAPPER_END, payload)
+      new TransportMessage(MessageType.MAPPER_END, payload, serdeVersion)
 
-    case MapperEndResponse(status) =>
+    case MapperEndResponse(status, serdeVersion) =>
       val payload = PbMapperEndResponse.newBuilder()
         .setStatus(status.getValue)
         .build().toByteArray
-      new TransportMessage(MessageType.MAPPER_END_RESPONSE, payload)
+      new TransportMessage(MessageType.MAPPER_END_RESPONSE, payload, serdeVersion)
 
     // todo: ref this...
     case GetReducerFileGroup(shuffleId, isSegmentGranularityVisible, serdeVersion) =>
@@ -1199,11 +1207,14 @@ object ControlMessages extends Logging {
           pbMapperEnd.getPushFailureBatchesMap.asScala.map {
             case (partitionId, pushFailedBatchSet) =>
               (partitionId, PbSerDeUtils.fromPbPushFailedBatchSet(pushFailedBatchSet))
-          }.toMap.asJava)
+          }.toMap.asJava,
+          message.getSerdeVersion)
 
       case MAPPER_END_RESPONSE_VALUE =>
         val pbMapperEndResponse = PbMapperEndResponse.parseFrom(message.getPayload)
-        MapperEndResponse(StatusCode.fromValue(pbMapperEndResponse.getStatus))
+        MapperEndResponse(
+          StatusCode.fromValue(pbMapperEndResponse.getStatus),
+          message.getSerdeVersion)
 
       case GET_REDUCER_FILE_GROUP_VALUE =>
         val pbGetReducerFileGroup = PbGetReducerFileGroup.parseFrom(message.getPayload)

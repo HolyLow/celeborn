@@ -1749,7 +1749,8 @@ public class ShuffleClientImpl extends ShuffleClient {
                   attemptId,
                   numMappers,
                   partitionId,
-                  pushState.getFailedBatches()),
+                  pushState.getFailedBatches(),
+                  SerdeVersion.V1),
               rpcMaxRetries,
               rpcRetryWait,
               ClassTag$.MODULE$.apply(MapperEndResponse.class));
