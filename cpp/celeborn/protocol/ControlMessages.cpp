@@ -217,8 +217,10 @@ GetReducerFileGroupResponse::fromTransportMessage(
         0,
         "legecy PartitionLocation pb is deprecated");
     // Packed mode: must use packedPartitionLocations.
-    const auto& pbPackedPartitionLocationsPair = kv.second.partitionlocationspair();
-    auto locations = fromPbPackedPartitionLocationsPair(pbPackedPartitionLocationsPair);
+    const auto& pbPackedPartitionLocationsPair =
+        kv.second.partitionlocationspair();
+    auto locations =
+        fromPbPackedPartitionLocationsPair(pbPackedPartitionLocationsPair);
     for (auto& location : locations) {
       fileGroup.insert(std::move(location));
     }
