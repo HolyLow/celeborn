@@ -33,7 +33,7 @@ std::unique_ptr<StorageInfo> StorageInfo::fromPb(const PbStorageInfo& pb) {
   return std::move(result);
 }
 
-std::unique_ptr<PbStorageInfo> StorageInfo::toProto() const {
+std::unique_ptr<PbStorageInfo> StorageInfo::toPb() const {
   auto pbStorageInfo = std::make_unique<PbStorageInfo>();
   pbStorageInfo->set_type(type);
   pbStorageInfo->set_mountpoint(mountPoint);
@@ -108,10 +108,10 @@ PartitionLocation::PartitionLocation(const PartitionLocation& other)
               : nullptr),
       storageInfo(std::make_unique<StorageInfo>(*other.storageInfo)) {}
 
-std::unique_ptr<PbPartitionLocation> PartitionLocation::toProto() const {
-  auto pbPartitionLocation = toProtoWithoutPeer();
+std::unique_ptr<PbPartitionLocation> PartitionLocation::toPb() const {
+  auto pbPartitionLocation = toPbWithoutPeer();
   if (replicaPeer) {
-    auto pbPeerPartitionLocation = replicaPeer->toProtoWithoutPeer();
+    auto pbPeerPartitionLocation = replicaPeer->toPbWithoutPeer();
     pbPartitionLocation->set_allocated_peer(pbPeerPartitionLocation.release());
   }
   return pbPartitionLocation;
@@ -133,7 +133,7 @@ std::unique_ptr<PartitionLocation> PartitionLocation::fromPbWithoutPeer(
   return std::move(result);
 }
 
-std::unique_ptr<PbPartitionLocation> PartitionLocation::toProtoWithoutPeer()
+std::unique_ptr<PbPartitionLocation> PartitionLocation::toPbWithoutPeer()
     const {
   auto pbPartitionLocation = std::make_unique<PbPartitionLocation>();
   pbPartitionLocation->set_id(id);
@@ -145,7 +145,7 @@ std::unique_ptr<PbPartitionLocation> PartitionLocation::toProtoWithoutPeer()
   pbPartitionLocation->set_replicateport(replicatePort);
   pbPartitionLocation->set_mode(static_cast<PbPartitionLocation_Mode>(mode));
   pbPartitionLocation->set_allocated_storageinfo(
-      storageInfo->toProto().release());
+      storageInfo->toPb().release());
   return pbPartitionLocation;
 }
 

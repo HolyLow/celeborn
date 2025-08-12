@@ -124,7 +124,7 @@ std::unique_ptr<MapperEndResponse> MapperEndResponse::fromTransportMessage(
 }
 
 ReviveRequest::ReviveRequest(
-    long _shuffleId,
+    int _shuffleId,
     int _mapId,
     int _attemptId,
     int _partitionId,
@@ -153,7 +153,7 @@ TransportMessage Revive::toTransportMessage() const {
     pbRevivePartitionInfo->set_status(reviveRequest->cause);
     if (reviveRequest->loc) {
       pbRevivePartitionInfo->set_allocated_partition(
-          reviveRequest->loc->toProto().release());
+          reviveRequest->loc->toPb().release());
     }
   }
   std::string payload = pb.SerializeAsString();

@@ -27,7 +27,7 @@
 namespace celeborn {
 namespace protocol {
 struct RegisterShuffle {
-  long shuffleId;
+  int shuffleId;
   int numMappers;
   int numPartitions;
 
@@ -43,7 +43,7 @@ struct RegisterShuffleResponse {
 };
 
 struct MapperEnd {
-  long shuffleId;
+  int shuffleId;
   int mapId;
   int attemptId;
   int numMappers;
@@ -60,7 +60,7 @@ struct MapperEndResponse {
 };
 
 struct ReviveRequest {
-  long shuffleId;
+  int shuffleId;
   int mapId;
   int attemptId;
   int partitionId;
@@ -70,7 +70,7 @@ struct ReviveRequest {
   std::atomic<int> reviveStatus{StatusCode::REVIVE_INITIALIZED};
 
   ReviveRequest(
-      long _shuffleId,
+      int _shuffleId,
       int _mapId,
       int _attemptId,
       int _partitionId,
@@ -80,7 +80,7 @@ struct ReviveRequest {
 };
 
 struct Revive {
-  long shuffleId;
+  int shuffleId;
   std::unordered_set<int> mapIds;
   std::unordered_set<std::shared_ptr<ReviveRequest>> reviveRequests;
 
