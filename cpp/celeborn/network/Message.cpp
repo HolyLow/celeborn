@@ -151,7 +151,6 @@ std::unique_ptr<ChunkFetchFailure> ChunkFetchFailure::decodeFrom(
       streamChunkSlice, std::move(errorString));
 }
 
-
 PushData::PushData(
     long requestId,
     uint8_t mode,

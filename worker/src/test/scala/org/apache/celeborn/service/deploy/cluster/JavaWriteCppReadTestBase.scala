@@ -256,6 +256,4 @@ trait JavaWriteCppReadTestBase extends AnyFunSuite
     lifecycleManager.stop()
     shuffleClient.shutdown()
   }
-
-  // todo: check if the code works...
 }
